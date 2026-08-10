@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+:root {
+  --background: 220 20% 97%;
+  --foreground: 224 30% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 30% 12%;
+  --primary: 214 84% 46%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 220 16% 92%;
+  --muted-foreground: 220 10% 42%;
+  --border: 220 14% 86%;
+  --ring: 214 84% 46%;
+  --radius: 0.75rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    'SF Pro Text',
+    'PingFang SC',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 12px 40px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.floating-root {
+  background: transparent;
+}
+
+.floating-root body,
+.floating-root #root {
+  background: transparent;
+}

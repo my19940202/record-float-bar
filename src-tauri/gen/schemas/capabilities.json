@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Default capabilities for Outline Helper","local":true,"windows":["main","floating"],"permissions":["core:default","core:event:default","core:window:default","core:webview:default","store:default","sql:default","sql:allow-execute","global-shortcut:default"]}}

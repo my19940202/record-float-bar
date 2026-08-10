@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "identifier": "default",
+  "description": "Default capabilities for Outline Helper",
+  "windows": ["main", "floating"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:default",
+    "core:webview:default",
+    "store:default",
+    "sql:default",
+    "sql:allow-execute",
+    "global-shortcut:default"
+  ]
+}
