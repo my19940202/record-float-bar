@@ -3,6 +3,7 @@ import type {
   DmxSettings,
   GenerateOutlinePayload,
   OutlineContent,
+  FloatingSettings,
 } from '@/types/outline';
 import {
   deleteOutline as deleteOutlineDb,
@@ -59,10 +60,10 @@ export async function setFloatingViewState(
   return invoke('set_floating_view_state', { viewState });
 }
 
-export async function nextFloatingChapter(): Promise<void> {
-  return invoke('next_floating_chapter');
+export async function getFloatingSettings(): Promise<FloatingSettings> {
+  return invoke<FloatingSettings>('get_floating_settings');
 }
 
-export async function prevFloatingChapter(): Promise<void> {
-  return invoke('prev_floating_chapter');
+export async function saveFloatingSettings(settings: FloatingSettings): Promise<void> {
+  return invoke('save_floating_settings', { settings });
 }

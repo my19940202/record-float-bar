@@ -47,6 +47,17 @@ export interface DmxSettings {
 
 export type FloatingViewState = 'collapsed' | 'chapters' | 'detail';
 
+export type FloatingTheme = 'light' | 'dark';
+export type FloatingLayout = 'vertical' | 'horizontal';
+
+export interface FloatingSettings {
+  theme: FloatingTheme;
+  layout: FloatingLayout;
+  fontSize: number;
+  opacity: number;
+  blur: number;
+}
+
 export function createChapterId() {
   return crypto.randomUUID();
 }

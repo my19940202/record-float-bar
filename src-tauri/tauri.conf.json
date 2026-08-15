@@ -24,13 +24,14 @@
         "title": "Outline Floating",
         "url": "floating.html",
         "width": 320,
-        "height": 640,
+        "height": 120,
         "visible": false,
         "decorations": false,
         "transparent": true,
+        "shadow": false,
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "resizable": true
+        "resizable": false
       }
     ],
     "security": {

@@ -37,28 +37,31 @@ export function EditOutlinePage() {
   const [savedId, setSavedId] = useState<number | null>(null);
 
   useEffect(() => {
-    async function load() {
-      if (id === 'new') {
-        if (!draft) {
-          navigate('/create');
-          return;
-        }
-        setTitle(draft.title);
-        setContent(draft);
-        setSourceType(state.sourceType ?? 'text');
-        setSourceName(state.sourceName ?? null);
-        return;
-      }
+    if (id !== 'new') return;
+    if (!draft) {
+      navigate('/create', { replace: true });
+      return;
+    }
+    setTitle(draft.title);
+    setContent(draft);
+    setSourceType(state.sourceType ?? 'text');
+    setSourceName(state.sourceName ?? null);
+  }, [draft, id, navigate, state.sourceName, state.sourceType]);
 
-      const numericId = Number(id);
-      if (!numericId) {
-        navigate('/');
-        return;
-      }
+  useEffect(() => {
+    if (!id || id === 'new') return;
+    const numericId = Number(id);
+    if (!numericId) {
+      navigate('/', { replace: true });
+      return;
+    }
 
-      setLoading(true);
+    let cancelled = false;
+    setLoading(true);
+    void (async () => {
       try {
         const outline = await getOutline(numericId);
+        if (cancelled) return;
         setTitle(outline.title);
         setContent(outline.content);
         setSourceType(outline.source_type);
@@ -66,14 +69,18 @@ export function EditOutlinePage() {
         setSavedId(outline.id);
         setDraft(outline.content);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '加载失败');
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : '加载失败');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    }
+    })();
 
-    void load();
-  }, [draft, id, navigate, setDraft, state.sourceName, state.sourceType]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, navigate, setDraft]);
 
   function updateContent(next: OutlineContent) {
     setContent(next);

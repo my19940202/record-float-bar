@@ -7,11 +7,12 @@ use tauri_plugin_store::StoreExt;
 
 use crate::db::OutlineContent;
 use crate::dmx::{self, DmxError};
-use crate::state::{AppState, DmxSettings, FloatingRuntimeState};
+use crate::state::{AppState, DmxSettings, FloatingSettings};
 
 const STORE_PATH: &str = "settings.json";
 const DEFAULT_ENDPOINT: &str =
     "https://www.dmxapi.cn/v1beta/models/gemini-3-flash-preview:generateContent";
+const DEFAULT_FLOATING_SETTINGS: &str = "floatingSettings";
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "mode")]
@@ -53,6 +54,35 @@ fn load_settings(app: &AppHandle) -> Result<DmxSettings, String> {
         .unwrap_or_default();
 
     Ok(DmxSettings { endpoint, api_key })
+}
+
+fn load_floating_settings(app: &AppHandle) -> Result<FloatingSettings, String> {
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    match store.get(DEFAULT_FLOATING_SETTINGS) {
+        Some(value) => serde_json::from_value(value).map_err(|error| error.to_string()),
+        None => Ok(FloatingSettings::default()),
+    }
+}
+
+#[tauri::command]
+pub async fn get_floating_settings(app: AppHandle) -> Result<FloatingSettings, String> {
+    load_floating_settings(&app)
+}
+
+#[tauri::command]
+pub async fn save_floating_settings(
+    app: AppHandle,
+    settings: FloatingSettings,
+) -> Result<(), String> {
+    let mut normalized = settings;
+    normalized.theme = if normalized.theme == "dark" { "dark" } else { "light" }.to_string();
+    normalized.layout = if normalized.layout == "horizontal" { "horizontal" } else { "vertical" }.to_string();
+    normalized.font_size = normalized.font_size.clamp(12, 32);
+    normalized.opacity = normalized.opacity.clamp(0.35, 1.0);
+    normalized.blur = normalized.blur.min(40);
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    store.set(DEFAULT_FLOATING_SETTINGS, serde_json::to_value(normalized).map_err(|error| error.to_string())?);
+    store.save().map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -137,7 +167,7 @@ pub async fn show_floating_outline(
         let mut runtime = state.lock().map_err(|_| "状态锁失败".to_string())?;
         runtime.floating.outline_id = Some(id);
         runtime.floating.chapter_index = 0;
-        runtime.floating.view_state = "chapters".to_string();
+        runtime.floating.view_state = "collapsed".to_string();
     }
 
     let url = if cfg!(debug_assertions) {
@@ -161,16 +191,23 @@ pub async fn show_floating_outline(
         window
             .set_always_on_top(true)
             .map_err(|error| error.to_string())?;
+        window
+            .set_resizable(false)
+            .map_err(|error| error.to_string())?;
+        window
+            .set_shadow(false)
+            .map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
         return Ok(());
     }
 
     WebviewWindowBuilder::new(&app, "floating", url)
         .title("Outline Floating")
-        .inner_size(320.0, 640.0)
+        .inner_size(320.0, 120.0)
         .decorations(false)
+        .shadow(false)
         .always_on_top(true)
-        .resizable(true)
+        .resizable(false)
         .skip_taskbar(true)
         .build()
         .map_err(|error| error.to_string())?;
@@ -218,60 +255,14 @@ pub async fn set_floating_view_state(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn next_floating_chapter(
-    app: AppHandle,
-    state: State<'_, Mutex<AppState>>,
-) -> Result<(), String> {
-    next_floating_chapter_internal_with_state(&app, state.inner())
-}
-
-#[tauri::command]
-pub async fn prev_floating_chapter(
-    app: AppHandle,
-    state: State<'_, Mutex<AppState>>,
-) -> Result<(), String> {
-    prev_floating_chapter_internal_with_state(&app, state.inner())
-}
-
-pub fn next_floating_chapter_internal(app: &AppHandle) -> Result<(), String> {
-    let state = app.state::<Mutex<AppState>>();
-    next_floating_chapter_internal_with_state(app, state.inner())
-}
-
-pub fn prev_floating_chapter_internal(app: &AppHandle) -> Result<(), String> {
-    let state = app.state::<Mutex<AppState>>();
-    prev_floating_chapter_internal_with_state(app, state.inner())
-}
-
-fn next_floating_chapter_internal_with_state(
-    app: &AppHandle,
-    state: &Mutex<AppState>,
-) -> Result<(), String> {
-    let mut runtime = state.lock().map_err(|_| "状态锁失败".to_string())?;
-    runtime.floating.chapter_index = runtime.floating.chapter_index.saturating_add(1);
-    runtime.floating.view_state = "detail".to_string();
-    emit_chapter_change(app, &runtime.floating);
-    Ok(())
-}
-
-fn prev_floating_chapter_internal_with_state(
-    app: &AppHandle,
-    state: &Mutex<AppState>,
-) -> Result<(), String> {
-    let mut runtime = state.lock().map_err(|_| "状态锁失败".to_string())?;
-    runtime.floating.chapter_index = runtime.floating.chapter_index.saturating_sub(1);
-    runtime.floating.view_state = "detail".to_string();
-    emit_chapter_change(app, &runtime.floating);
-    Ok(())
-}
-
-fn emit_chapter_change(app: &AppHandle, runtime: &FloatingRuntimeState) {
+pub fn emit_floating_navigation(app: &AppHandle, direction: &str) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
         let payload = serde_json::json!({
-          "chapterIndex": runtime.chapter_index,
-          "viewState": runtime.view_state
+          "direction": direction
         });
-        let _ = window.emit("floating-chapter-changed", payload);
+        window
+            .emit("floating-navigation-requested", payload)
+            .map_err(|error| error.to_string())?;
     }
+    Ok(())
 }

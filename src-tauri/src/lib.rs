@@ -29,33 +29,33 @@ pub fn run() {
             commands::set_floating_chapter_index,
             commands::get_floating_state,
             commands::set_floating_view_state,
-            commands::next_floating_chapter,
-            commands::prev_floating_chapter,
+            commands::get_floating_settings,
+            commands::save_floating_settings,
         ])
         .setup(|app| {
-            let shortcut_up = Shortcut::new(
+            let shortcut_left = Shortcut::new(
                 Some(Modifiers::SUPER | Modifiers::SHIFT),
-                Code::ArrowUp,
+                Code::ArrowLeft,
             );
-            let shortcut_down = Shortcut::new(
+            let shortcut_right = Shortcut::new(
                 Some(Modifiers::SUPER | Modifiers::SHIFT),
-                Code::ArrowDown,
+                Code::ArrowRight,
             );
 
             let app_handle = app.handle().clone();
-            app.global_shortcut().on_shortcut(shortcut_up, {
+            app.global_shortcut().on_shortcut(shortcut_left, {
                 let app_handle = app_handle.clone();
                 move |_app, _shortcut, event| {
                     if event.state() == ShortcutState::Pressed {
-                        let _ = commands::prev_floating_chapter_internal(&app_handle);
+                        let _ = commands::emit_floating_navigation(&app_handle, "previous");
                     }
                 }
             })?;
 
-            app.global_shortcut().on_shortcut(shortcut_down, {
+            app.global_shortcut().on_shortcut(shortcut_right, {
                 move |_app, _shortcut, event| {
                     if event.state() == ShortcutState::Pressed {
-                        let _ = commands::next_floating_chapter_internal(&app_handle);
+                        let _ = commands::emit_floating_navigation(&app_handle, "next");
                     }
                 }
             })?;
