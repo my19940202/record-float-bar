@@ -27,6 +27,7 @@ import {
   setFloatingChapterIndex,
   setFloatingViewState,
 } from '@/services/api';
+import { useI18n } from '@/lib/i18n';
 
 interface FloatingPanelProps { outline: OutlineContent }
 
@@ -41,15 +42,21 @@ const defaultSettings: FloatingSettings = {
 
 const backgroundChoices: Array<{
   value: FloatingBackground;
-  label: string;
+  labelKey: FloatingBackground;
   swatch: string;
 }> = [
-  { value: 'cream', label: '奶油', swatch: '#fff4e6' },
-  { value: 'white', label: '白色', swatch: '#ffffff' },
-  { value: 'lavender', label: '淡紫', swatch: '#eadcff' },
-  { value: 'blue', label: '雾蓝', swatch: '#dff2ff' },
-  { value: 'pink', label: '柔粉', swatch: '#ffe1eb' },
-  { value: 'slate', label: '深灰', swatch: '#111827' },
+  { value: 'cream', labelKey: 'cream', swatch: '#fff4e6' },
+  { value: 'white', labelKey: 'white', swatch: '#ffffff' },
+  { value: 'lavender', labelKey: 'lavender', swatch: '#eadcff' },
+  { value: 'blue', labelKey: 'blue', swatch: '#dff2ff' },
+  { value: 'pink', labelKey: 'pink', swatch: '#ffe1eb' },
+  { value: 'slate', labelKey: 'slate', swatch: '#111827' },
+  { value: 'butter', labelKey: 'butter', swatch: '#fff8ca' },
+  { value: 'lemon', labelKey: 'lemon', swatch: '#f9ff9e' },
+  { value: 'lilac', labelKey: 'lilac', swatch: '#f3e8ff' },
+  { value: 'sky', labelKey: 'sky', swatch: '#dcf4ff' },
+  { value: 'blush', labelKey: 'blush', swatch: '#ffe7df' },
+  { value: 'graphite', labelKey: 'graphite', swatch: '#241f33' },
 ];
 
 interface HorizontalResizeState {
@@ -63,6 +70,7 @@ interface HorizontalResizeState {
 }
 
 export function FloatingPanel({ outline }: FloatingPanelProps) {
+  const { t } = useI18n();
   const [viewState, setViewStateLocal] = useState<FloatingViewState>('collapsed');
   const [chapterIndex, setChapterIndex] = useState(0);
   const [settings, setSettings] = useState(defaultSettings);
@@ -270,7 +278,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   function startWindowDragging(event: React.MouseEvent<HTMLElement>) {
     if (event.button !== 0) return;
     void getCurrentWindow().startDragging().catch((error) => {
-      console.error('拖拽浮窗失败', error);
+      console.error(t.floatingPanel.dragFailed, error);
     });
   }
 
@@ -362,8 +370,8 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
                 <p>{activeChapter.title}</p>
                 <button
                   type="button"
-                  aria-label="收起章节详情"
-                  title="收起章节详情"
+                  aria-label={t.floatingPanel.collapseDetail}
+                  title={t.floatingPanel.collapseDetail}
                   className="floating-icon-button"
                   onClick={() => void updateViewState('chapters')}
                 >
@@ -392,23 +400,23 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
             onMouseDown={startWindowDragging}
           >
             <div className="floating-compact-toolbar">
-              <div className="floating-compact-drag" aria-label="拖拽浮窗">
+              <div className="floating-compact-drag" aria-label={t.floatingPanel.dragWindow}>
                 <ListTree className="size-4" />
               </div>
               <div className="flex items-center gap-1">
-                <button type="button" aria-label="浮窗设置" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
+                <button type="button" aria-label={t.floatingPanel.settings} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
                   setSettingsOpen((value) => !value);
                   showCompactChrome();
                 }}>
                   <Settings2 className="size-4" />
                 </button>
-                <button type="button" aria-label="收起提纲" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
+                <button type="button" aria-label={t.floatingPanel.collapseOutline} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
                   setSettingsOpen(false);
                   void updateViewState('collapsed');
                 }}>
                   <ChevronUp className="size-4" />
                 </button>
-                <button type="button" aria-label="关闭浮窗" title="关闭浮窗" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
+                <button type="button" aria-label={t.floatingPanel.close} title={t.floatingPanel.close} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
                   <X className="size-4" />
                 </button>
               </div>
@@ -420,13 +428,13 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
               <ListTree className="size-4" /> <span>{outline.title}</span>
             </div>
             <div className="flex items-center gap-1">
-              <button type="button" aria-label="浮窗设置" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => setSettingsOpen((value) => !value)}>
+              <button type="button" aria-label={t.floatingPanel.settings} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => setSettingsOpen((value) => !value)}>
                 <Settings2 className="size-4" />
               </button>
-              <button type="button" aria-label="展开提纲" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void updateViewState('chapters')}>
+              <button type="button" aria-label={t.floatingPanel.expandOutline} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void updateViewState('chapters')}>
                 <ChevronDown className="size-4" />
               </button>
-              <button type="button" aria-label="关闭浮窗" title="关闭浮窗" className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
+              <button type="button" aria-label={t.floatingPanel.close} title={t.floatingPanel.close} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
                 <X className="size-4" />
               </button>
             </div>
@@ -435,31 +443,34 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
 
         <AnimatePresence initial={false}>
           {settingsOpen ? <motion.div key="settings" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="floating-settings">
-            <div className="floating-setting-row"><span>主题</span><button type="button" className="floating-choice" onClick={() => void updateSettings({ theme: dark ? 'light' : 'dark' })}>{dark ? <Moon className="size-3" /> : <Sun className="size-3" />} {dark ? '深色' : '浅色'}</button></div>
-            <div className="floating-setting-row"><span>布局</span><div className="flex gap-1"><button type="button" className={`floating-choice ${settings.layout === 'vertical' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'vertical' })}>竖排</button><button type="button" className={`floating-choice ${settings.layout === 'horizontal' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'horizontal' })}>横排</button></div></div>
+            <div className="floating-setting-row"><span>{t.floatingPanel.theme}</span><button type="button" className="floating-choice" onClick={() => void updateSettings({ theme: dark ? 'light' : 'dark' })}>{dark ? <Moon className="size-3" /> : <Sun className="size-3" />} {dark ? t.floatingPanel.dark : t.floatingPanel.light}</button></div>
+            <div className="floating-setting-row"><span>{t.floatingPanel.layout}</span><div className="flex gap-1"><button type="button" className={`floating-choice ${settings.layout === 'vertical' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'vertical' })}>{t.floatingPanel.vertical}</button><button type="button" className={`floating-choice ${settings.layout === 'horizontal' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'horizontal' })}>{t.floatingPanel.horizontal}</button></div></div>
             <div className="floating-setting-group">
               <div className="floating-setting-row">
-                <span>背景</span>
+                <span>{t.floatingPanel.background}</span>
                 <Palette className="size-3 opacity-70" />
               </div>
               <div className="floating-swatch-grid">
-                {backgroundChoices.map((choice) => (
-                  <button
-                    key={choice.value}
-                    type="button"
-                    className={`floating-swatch ${settings.background === choice.value ? 'active' : ''}`}
-                    aria-label={`背景色：${choice.label}`}
-                    title={choice.label}
-                    onClick={() => void updateSettings({ background: choice.value })}
-                  >
-                    <span style={{ background: choice.swatch }} />
-                  </button>
-                ))}
+                {backgroundChoices.map((choice) => {
+                  const label = t.floatingPanel.backgrounds[choice.labelKey];
+                  return (
+                    <button
+                      key={choice.value}
+                      type="button"
+                      className={`floating-swatch ${settings.background === choice.value ? 'active' : ''}`}
+                      aria-label={`${t.floatingPanel.backgroundColor}: ${label}`}
+                      title={label}
+                      onClick={() => void updateSettings({ background: choice.value })}
+                    >
+                      <span style={{ background: choice.swatch }} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <label className="floating-range">字号 <output>{settings.fontSize}px</output><input type="range" min="12" max="32" step="1" value={settings.fontSize} onChange={(e) => void updateSettings({ fontSize: Number(e.target.value) })} /></label>
-            <label className="floating-range">透明度 <output>{Math.round(settings.opacity * 100)}%</output><input type="range" min="0.35" max="1" step="0.05" value={settings.opacity} onChange={(e) => void updateSettings({ opacity: Number(e.target.value) })} /></label>
-            <label className="floating-range">模糊度 <output>{settings.blur}px</output><input type="range" min="0" max="40" step="1" value={settings.blur} onChange={(e) => void updateSettings({ blur: Number(e.target.value) })} /></label>
+            <label className="floating-range">{t.floatingPanel.fontSize} <output>{settings.fontSize}px</output><input type="range" min="12" max="32" step="1" value={settings.fontSize} onChange={(e) => void updateSettings({ fontSize: Number(e.target.value) })} /></label>
+            <label className="floating-range">{t.floatingPanel.opacity} <output>{Math.round(settings.opacity * 100)}%</output><input type="range" min="0.35" max="1" step="0.05" value={settings.opacity} onChange={(e) => void updateSettings({ opacity: Number(e.target.value) })} /></label>
+            <label className="floating-range">{t.floatingPanel.blur} <output>{settings.blur}px</output><input type="range" min="0" max="40" step="1" value={settings.blur} onChange={(e) => void updateSettings({ blur: Number(e.target.value) })} /></label>
           </motion.div> : null}
         </AnimatePresence>
 

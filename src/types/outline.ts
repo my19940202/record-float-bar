@@ -55,7 +55,13 @@ export type FloatingBackground =
   | 'lavender'
   | 'blue'
   | 'pink'
-  | 'slate';
+  | 'slate'
+  | 'butter'
+  | 'lemon'
+  | 'lilac'
+  | 'sky'
+  | 'blush'
+  | 'graphite';
 
 export interface FloatingSettings {
   theme: FloatingTheme;

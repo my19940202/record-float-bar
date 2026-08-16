@@ -81,7 +81,18 @@ pub async fn save_floating_settings(
     normalized.layout = if normalized.layout == "horizontal" { "horizontal" } else { "vertical" }.to_string();
     if !matches!(
         normalized.background.as_str(),
-        "cream" | "white" | "lavender" | "blue" | "pink" | "slate"
+        "cream"
+            | "white"
+            | "lavender"
+            | "blue"
+            | "pink"
+            | "slate"
+            | "butter"
+            | "lemon"
+            | "lilac"
+            | "sky"
+            | "blush"
+            | "graphite"
     ) {
         normalized.background = "cream".to_string();
     }

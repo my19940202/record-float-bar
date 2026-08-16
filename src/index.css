@@ -87,6 +87,12 @@ body {
 .floating-bg-blue { --floating-fg: #172033; --floating-muted: #45566f; --floating-panel: 223, 242, 255; --floating-border: rgba(42,91,130,.16); --floating-accent: rgba(124,77,255,.15); --floating-accent-border: rgba(42,91,130,.35); }
 .floating-bg-pink { --floating-fg: #2d1e2a; --floating-muted: #75596a; --floating-panel: 255, 225, 235; --floating-border: rgba(142,64,94,.16); --floating-accent: rgba(124,77,255,.16); --floating-accent-border: rgba(142,64,94,.35); }
 .floating-bg-slate { --floating-fg: #f8fafc; --floating-muted: #cbd5e1; --floating-panel: 17, 24, 39; --floating-border: rgba(255,255,255,.18); --floating-accent: rgba(158,216,255,.2); --floating-accent-border: rgba(158,216,255,.46); }
+.floating-bg-butter { --floating-fg: #2b2233; --floating-muted: #7b6d55; --floating-panel: 255, 248, 202; --floating-border: rgba(92,76,38,.16); --floating-accent: rgba(124,77,255,.16); --floating-accent-border: rgba(92,76,38,.34); }
+.floating-bg-lemon { --floating-fg: #272815; --floating-muted: #66683d; --floating-panel: 249, 255, 158; --floating-border: rgba(88,93,27,.18); --floating-accent: rgba(124,77,255,.14); --floating-accent-border: rgba(88,93,27,.36); }
+.floating-bg-lilac { --floating-fg: #271e35; --floating-muted: #74648a; --floating-panel: 243, 232, 255; --floating-border: rgba(89,51,214,.16); --floating-accent: rgba(124,77,255,.18); --floating-accent-border: rgba(124,77,255,.38); }
+.floating-bg-sky { --floating-fg: #142438; --floating-muted: #496278; --floating-panel: 220, 244, 255; --floating-border: rgba(42,91,130,.14); --floating-accent: rgba(124,77,255,.14); --floating-accent-border: rgba(42,91,130,.34); }
+.floating-bg-blush { --floating-fg: #321e29; --floating-muted: #7a5468; --floating-panel: 255, 231, 223; --floating-border: rgba(142,64,94,.14); --floating-accent: rgba(124,77,255,.14); --floating-accent-border: rgba(142,64,94,.34); }
+.floating-bg-graphite { --floating-fg: #f7f4ff; --floating-muted: #d2c8e4; --floating-panel: 36, 31, 51; --floating-border: rgba(255,255,255,.18); --floating-accent: rgba(234,220,255,.18); --floating-accent-border: rgba(234,220,255,.42); }
 
 .floating-panel {
   position: relative;
