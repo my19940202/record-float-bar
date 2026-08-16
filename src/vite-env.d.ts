@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  readonly VITE_DEEPSEEK_API_URL?: string;
+  readonly VITE_DEEPSEEK_API_KEY?: string;
   readonly VITE_DMXAPI_GEMINI_ENDPOINT?: string;
   readonly VITE_DMXAPI_API_KEY?: string;
 }

@@ -91,7 +91,7 @@ export function SettingsPage() {
                 id="endpoint"
                 value={endpoint}
                 onChange={(event) => setEndpoint(event.target.value)}
-                placeholder="https://www.dmxapi.cn/v1beta/models/gemini-3-flash-preview:generateContent"
+                placeholder="https://api.deepseek.com/chat/completions"
               />
             </div>
             <div className="space-y-2">

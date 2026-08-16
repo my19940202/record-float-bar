@@ -1,52 +1,54 @@
-# DemoCue Project Guide
+# DemoCue 项目说明
 
-## Overview
+## 项目概览
 
-DemoCue is a macOS Tauri 2 app with a React 19 frontend. It generates structured presentation or recording outlines, stores them locally, and shows a transparent always-on-top floating guide window while recording.
+DemoCue 是一个 macOS 桌面应用，技术栈是 Tauri 2 + React 19。它用于生成视频录制提纲，把提纲保存在本地，并在录制时通过透明置顶的浮窗显示讲解提示。
 
-## Directory Structure
+当前 AI 生成能力使用 DeepSeek 官方 Chat Completions API。文件上传入口暂时隐藏，生成提纲只走文字输入。
 
-- `src/`: React frontend source.
-- `src/pages/`: Main routed pages for outline list, outline creation, outline editing, and settings.
-- `src/components/`: Shared UI and feature components.
-- `src/components/ui/`: Small local UI primitives such as buttons, cards, inputs, and tabs.
-- `src/windows/`: Alternate window entry components, currently the floating outline window.
-- `src/services/`: Frontend data and Tauri command adapters.
-- `src/stores/`: Zustand stores for shared frontend state.
-- `src/lib/`: Utility helpers and global app helpers such as i18n.
-- `src/types/`: Shared TypeScript domain types and normalization helpers.
-- `src-tauri/`: Rust backend, Tauri configuration, app icons, permissions, and generated schemas.
-- `index.html`: Main app HTML entry.
-- `floating.html`: Floating window HTML entry.
+## 目录结构
 
-## Key Frontend Files
+- `src/`：React 前端源码。
+- `src/pages/`：主应用页面，包括首页、创建提纲、编辑提纲、设置页。
+- `src/components/`：通用组件和业务组件。
+- `src/components/ui/`：本地 UI 基础组件，例如按钮、卡片、输入框、标签页。
+- `src/windows/`：独立窗口入口组件，目前主要是悬浮提纲窗口。
+- `src/services/`：前端数据访问、Tauri command 调用封装。
+- `src/stores/`：Zustand 状态管理。
+- `src/lib/`：通用工具和全局能力，例如 i18n。
+- `src/types/`：前端共享 TypeScript 类型和数据规范化逻辑。
+- `src-tauri/`：Rust 后端、Tauri 配置、图标、权限、生成的 schema。
+- `index.html`：主应用 HTML 入口。
+- `floating.html`：悬浮窗 HTML 入口。
 
-- `src/App.tsx`: Chooses between the main routed app and the floating window based on the current path. Wraps the main app in the global i18n provider.
-- `src/components/AppLayout.tsx`: Main application shell with DemoCue branding, navigation, and shared page background.
-- `src/lib/i18n.tsx`: Global Chinese/English language state, persisted in `localStorage` under `democue.language`.
-- `src/pages/Home.tsx`: Lists saved outlines and opens an outline in the floating window.
-- `src/pages/CreateOutline.tsx`: Creates a new outline from text or PDF/Markdown/TXT input.
-- `src/pages/EditOutline.tsx`: Edits outline titles, chapters, and talking points.
-- `src/pages/Settings.tsx`: Configures DMXAPI settings and toggles the global UI language.
-- `src/components/FloatingPanel.tsx`: Floating guide bar UI, including theme, layout, font size, opacity, blur, and background color settings.
-- `src/components/Chapter.tsx`: Editable chapter card used by the outline editor.
-- `src/services/api.ts`: Tauri `invoke` wrappers and re-exports for local database helpers.
-- `src/services/db.ts`: Frontend SQLite access through `@tauri-apps/plugin-sql`.
-- `src/stores/outlineStore.ts`: Zustand state for outline lists, drafts, saving, and deletion.
-- `src/index.css`: Tailwind import, design tokens, app theme, and floating window styles.
+## 关键前端文件
 
-## Key Tauri Files
+- `src/App.tsx`：根据当前路径决定渲染主应用还是悬浮窗，并挂载全局 i18n provider。
+- `src/components/AppLayout.tsx`：主应用外壳，包含 DemoCue 品牌、导航和页面背景。
+- `src/lib/i18n.tsx`：全局中英文词条和语言状态，语言选择保存在 `localStorage` 的 `democue.language`。
+- `src/pages/Home.tsx`：展示已保存提纲列表，并打开悬浮窗。
+- `src/pages/CreateOutline.tsx`：通过文字输入创建新提纲。由于当前 DeepSeek 官方 API 流程只支持文本生成，文件上传已隐藏。
+- `src/pages/EditOutline.tsx`：编辑提纲标题、章节和讲解重点。
+- `src/pages/Settings.tsx`：配置 DeepSeek API endpoint/API key，并切换全局语言。
+- `src/components/FloatingPanel.tsx`：悬浮提纲条 UI，包括主题、布局、字号、透明度、模糊度、背景色设置。
+- `src/components/Chapter.tsx`：编辑页里的单个章节卡片。
+- `src/services/api.ts`：封装 Tauri `invoke` 调用，并重新导出部分本地数据库方法。
+- `src/services/db.ts`：通过 `@tauri-apps/plugin-sql` 访问本地 SQLite。
+- `src/stores/outlineStore.ts`：提纲列表、草稿、保存、删除等状态管理。
+- `src/index.css`：Tailwind 入口、设计变量、主应用样式和悬浮窗样式。
 
-- `src-tauri/tauri.conf.json`: Product name, windows, bundle icon paths, build commands, and plugin config.
-- `src-tauri/src/lib.rs`: Tauri builder setup, plugins, command registration, and global shortcut handling.
-- `src-tauri/src/commands/mod.rs`: Tauri commands for settings, AI generation, floating window lifecycle, and floating settings.
-- `src-tauri/src/state.rs`: Serializable app settings and in-memory floating window runtime state.
-- `src-tauri/src/db.rs`: SQLite schema migrations and outline normalization on the Rust side.
-- `src-tauri/src/dmx.rs`: DMXAPI Gemini request construction, response parsing, and error handling.
-- `src-tauri/capabilities/default.json`: Tauri permission scope for the main and floating windows.
-- `src-tauri/icons/icon.png`: App icon referenced by Tauri bundle config.
+## 关键 Tauri/Rust 文件
 
-## Common Commands
+- `src-tauri/tauri.conf.json`：产品名、窗口配置、bundle 图标、构建命令、插件配置。
+- `src-tauri/src/lib.rs`：Tauri builder 初始化、插件注册、command 注册、全局快捷键。
+- `src-tauri/src/commands/mod.rs`：Tauri commands，包括设置读写、AI 生成、悬浮窗生命周期、悬浮窗设置。
+- `src-tauri/src/state.rs`：可序列化的应用设置，以及内存中的悬浮窗运行状态。
+- `src-tauri/src/db.rs`：SQLite schema migration，以及 Rust 侧提纲数据规范化。
+- `src-tauri/src/dmx.rs`：DeepSeek Chat Completions 请求构造、响应解析、错误处理。文件名仍叫 `dmx.rs` 是历史遗留，实际已改为 DeepSeek。
+- `src-tauri/capabilities/default.json`：Tauri 权限范围，控制主窗口和悬浮窗能调用哪些能力。
+- `src-tauri/icons/icon.png`：Tauri bundle 使用的 app 图标。
+
+## 常用命令
 
 ```bash
 pnpm install
@@ -56,12 +58,14 @@ pnpm run build
 cd src-tauri && cargo check
 ```
 
-## Implementation Notes
+## 实现注意事项
 
-- Keep user-visible brand text as `DemoCue`.
-- Do not change the Tauri bundle identifier unless intentionally creating a separate installed app. Changing it can break continuity for local data and macOS permissions.
-- The main app supports global Chinese/English UI text through `useI18n()`. Add new user-facing page text to `src/lib/i18n.tsx`.
-- The floating window is intentionally separate from the main app shell and is not required to use the global language provider.
-- Floating panel settings are persisted through the Tauri store under `floatingSettings`; keep TypeScript and Rust settings structs in sync.
-- Local outlines are stored in SQLite through the Tauri SQL plugin.
-- DMXAPI endpoint and API key are stored locally via the Tauri store and are not bundled into the frontend.
+- 用户可见品牌名统一使用 `DemoCue`。
+- 不要随意修改 Tauri bundle identifier。修改 identifier 会让系统把它当成另一个 app，可能影响本地数据和 macOS 权限连续性。
+- 主应用通过 `useI18n()` 支持全局中英文切换。新增用户可见文案时，优先加到 `src/lib/i18n.tsx`。
+- 悬浮窗是独立入口，但当前也包在全局 i18n provider 下，加载/错误提示应使用词条。
+- 悬浮窗设置通过 Tauri store 的 `floatingSettings` 持久化；改设置字段时要同步 TypeScript 类型和 Rust struct。
+- 本地提纲数据通过 Tauri SQL plugin 存在 SQLite。
+- DeepSeek endpoint 和 API key 通过 Tauri store 保存在本地，不会进入前端 bundle。
+- 当前生成模型固定为 `deepseek-v4-flash`。
+- 旧的 `DMXAPI_*` 环境变量仍作为兼容 fallback，但主要配置应使用 `DEEPSEEK_API_URL` 和 `DEEPSEEK_API_KEY`。

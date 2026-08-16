@@ -9,73 +9,33 @@ pub enum DmxError {
     Message(String),
 }
 
-fn outline_response_schema() -> Value {
-    json!({
-      "type": "OBJECT",
-      "required": ["title", "chapters"],
-      "properties": {
-        "title": { "type": "STRING" },
-        "chapters": {
-          "type": "ARRAY",
-          "items": {
-            "type": "OBJECT",
-            "required": ["title", "points"],
-            "properties": {
-              "id": { "type": "STRING" },
-              "title": { "type": "STRING" },
-              "points": {
-                "type": "ARRAY",
-                "items": { "type": "STRING" }
-              }
-            }
-          }
-        }
-      }
-    })
-}
+const DEEPSEEK_MODEL: &str = "deepseek-v4-flash";
 
 fn system_prompt() -> &'static str {
-    "你是一位资深技术分享教练，擅长把复杂主题整理成适合录屏讲解的结构化提纲。\n\
+    "你是一位资深自媒体视频策划，擅长把任意主题整理成适合视频创作者录制的结构化提纲。\n\
+你不限制行业：知识科普、产品演示、生活方式、商业分析、教程、观点表达、娱乐内容都可以处理。\n\
+提纲要服务于真实视频制作：开场有钩子，章节推进清晰，内容有信息密度，方便提升观众留存。\n\
 你必须严格遵守以下输出规则：\n\
 1. 只能返回一个合法 JSON 对象。\n\
 2. 不要输出 Markdown，不要使用 ```json 代码块。\n\
 3. 不要输出任何解释、前言、后记、备注或道歉。\n\
-4. chapters 数量控制在 5 到 8 个。\n\
+4. chapters 数量控制在 3 到 8 个。\n\
 5. 每个 chapter 必须包含 title 和 points。\n\
-6. points 是 2 到 5 条短句，适合录制时快速扫读。\n\
-7. 语言使用简体中文，语气清晰、口语化、适合技术分享录制。"
+6. points 是 2 到 5 条短句，适合录制时快速扫读和口播发挥。\n\
+7. 语言使用简体中文，表达清晰、口语化、适合自媒体视频录制。\n\
+8. JSON 格式必须是 {\"title\":\"...\",\"chapters\":[{\"title\":\"...\",\"points\":[\"...\"]}]}。"
 }
 
 pub fn build_text_prompt(topic: &str, notes: Option<&str>) -> String {
     format!(
-        "请根据以下信息生成视频讲解提纲。\n\n主题：{topic}\n补充信息：{notes}\n\n请输出适合 8-15 分钟技术分享的章节结构。",
+        "请根据以下信息生成自媒体视频讲解提纲。\n\n主题：{topic}\n补充信息：{notes}\n\n请输出适合 8-15 分钟视频录制的章节结构，兼顾开场吸引、内容推进和观众留存。",
         topic = topic,
         notes = notes.unwrap_or("无")
     )
 }
 
-pub fn build_file_prompt(
-    file_name: &str,
-    file_text: Option<&str>,
-    extra_notes: Option<&str>,
-) -> String {
-    let mut sections = vec![format!(
-        "请根据附件「{file_name}」的内容，生成适合录屏讲解的结构化提纲。"
-    )];
-
-    if let Some(notes) = extra_notes.filter(|value| !value.trim().is_empty()) {
-        sections.push(format!("录制补充说明：{notes}"));
-    }
-    if let Some(text) = file_text.filter(|value| !value.trim().is_empty()) {
-        sections.push("附件文本内容如下：".to_string());
-        sections.push(text.to_string());
-    }
-
-    sections.join("\n\n")
-}
-
 fn log_dmx_debug(label: &str, content: &str) {
-    eprintln!("[dmx-outline] {label}: {content}");
+    eprintln!("[deepseek-outline] {label}: {content}");
 }
 
 fn log_dmx_response(status: reqwest::StatusCode, result: &Value) {
@@ -107,84 +67,50 @@ fn extract_json_object(text: &str) -> String {
 }
 
 fn extract_model_text(result: &Value) -> Option<String> {
-    let candidate = result.pointer("/candidates/0")?;
-    let finish_reason = candidate
-        .pointer("/finishReason")
+    let choice = result.pointer("/choices/0")?;
+    let finish_reason = choice
+        .pointer("/finish_reason")
         .and_then(Value::as_str)
         .unwrap_or("unknown");
-    log_dmx_debug("finishReason", finish_reason);
+    log_dmx_debug("finish_reason", finish_reason);
 
-    if let Some(parts) = candidate.pointer("/content/parts").and_then(Value::as_array) {
-        for (index, part) in parts.iter().enumerate() {
-            if let Some(text) = part.get("text").and_then(Value::as_str) {
-                if !text.trim().is_empty() {
-                    log_dmx_debug("text part index", &index.to_string());
-                    return Some(text.to_string());
-                }
-            }
-        }
+    let content = choice.pointer("/message/content").and_then(Value::as_str)?;
+    if !content.trim().is_empty() {
+        return Some(content.to_string());
     }
 
     None
 }
 
 fn describe_empty_response(result: &Value) -> String {
-    let prompt_feedback = result
-        .pointer("/promptFeedback/blockReason")
+    let finish_reason = result
+        .pointer("/choices/0/finish_reason")
         .and_then(Value::as_str)
-        .map(|reason| format!("promptFeedback.blockReason={reason}"))
-        .unwrap_or_default();
+        .map(|reason| format!("finish_reason={reason}"))
+        .unwrap_or_else(|| "finish_reason=missing".to_string());
 
-    let candidate_feedback = result
-        .pointer("/candidates/0/finishReason")
-        .and_then(Value::as_str)
-        .map(|reason| format!("finishReason={reason}"))
-        .unwrap_or_else(|| "finishReason=missing".to_string());
-
-    let safety = result
-        .pointer("/candidates/0/safetyRatings")
-        .map(|value| value.to_string())
-        .unwrap_or_default();
-
-    format!(
-        "模型未返回文本内容 ({candidate_feedback}{}. safetyRatings={safety})",
-        if prompt_feedback.is_empty() {
-            String::new()
-        } else {
-            format!(", {prompt_feedback}")
-        }
-    )
+    format!("模型未返回文本内容 ({finish_reason})")
 }
 
 pub async fn generate_outline_from_dmx(
     settings: &DmxSettings,
     user_prompt: String,
-    inline_parts: Vec<Value>,
 ) -> Result<OutlineContent, DmxError> {
     if settings.endpoint.trim().is_empty() || settings.api_key.trim().is_empty() {
         return Err(DmxError::Message(
-            "请先在设置页配置 DMXAPI Endpoint 和 API Key".to_string(),
+            "请先在设置页配置 DeepSeek API Endpoint 和 API Key".to_string(),
         ));
     }
 
-    let mut parts = inline_parts;
-    parts.push(json!({ "text": user_prompt }));
-
     let payload = json!({
-      "model": "gemini-3-flash-preview",
-      "contents": [{
-        "role": "user",
-        "parts": parts
-      }],
-      "systemInstruction": {
-        "parts": [{ "text": system_prompt() }]
-      },
-      "generationConfig": {
-        "temperature": 0.3,
-        "maxOutputTokens": 8192,
-        "response_mime_type": "application/json",
-        "response_schema": outline_response_schema()
-      }
+      "model": DEEPSEEK_MODEL,
+      "messages": [
+        { "role": "system", "content": system_prompt() },
+        { "role": "user", "content": user_prompt }
+      ],
+      "stream": false,
+      "temperature": 0.3,
+      "response_format": { "type": "json_object" }
     });
 
     log_dmx_debug("endpoint", settings.endpoint.trim());
@@ -201,13 +127,13 @@ pub async fn generate_outline_from_dmx(
         .json(&payload)
         .send()
         .await
-        .map_err(|error| DmxError::Message(format!("DMXAPI 请求失败: {error}")))?;
+        .map_err(|error| DmxError::Message(format!("DeepSeek API 请求失败: {error}")))?;
 
     let status = response.status();
     let result: Value = response
         .json()
         .await
-        .map_err(|error| DmxError::Message(format!("DMXAPI 响应解析失败: {error}")))?;
+        .map_err(|error| DmxError::Message(format!("DeepSeek API 响应解析失败: {error}")))?;
 
     log_dmx_response(status, &result);
 
@@ -218,7 +144,7 @@ pub async fn generate_outline_from_dmx(
             .and_then(Value::as_str)
             .unwrap_or(fallback.as_str());
         return Err(DmxError::Message(format!(
-            "DMXAPI 请求失败 ({status}): {message}"
+            "DeepSeek API 请求失败 ({status}): {message}"
         )));
     }
 

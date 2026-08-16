@@ -10,7 +10,8 @@ use crate::dmx::{self, DmxError};
 use crate::state::{AppState, DmxSettings, FloatingSettings};
 
 const STORE_PATH: &str = "settings.json";
-const DEFAULT_ENDPOINT: &str =
+const DEFAULT_ENDPOINT: &str = "https://api.deepseek.com/chat/completions";
+const LEGACY_DEFAULT_ENDPOINT: &str =
     "https://www.dmxapi.cn/v1beta/models/gemini-3-flash-preview:generateContent";
 const DEFAULT_FLOATING_SETTINGS: &str = "floatingSettings";
 
@@ -22,14 +23,8 @@ pub enum GenerateOutlinePayload {
         topic: String,
         notes: Option<String>,
     },
-    #[serde(rename = "file", rename_all = "camelCase")]
-    File {
-        file_name: String,
-        mime_type: String,
-        file_base64: Option<String>,
-        file_text: Option<String>,
-        extra_notes: Option<String>,
-    },
+    #[serde(rename = "file")]
+    File,
 }
 
 #[derive(Debug, Serialize)]
@@ -45,11 +40,18 @@ fn load_settings(app: &AppHandle) -> Result<DmxSettings, String> {
     let endpoint = store
         .get("endpoint")
         .and_then(|value| value.as_str().map(str::to_string))
+        .or_else(|| std::env::var("DEEPSEEK_API_URL").ok())
         .or_else(|| std::env::var("DMXAPI_GEMINI_ENDPOINT").ok())
         .unwrap_or_else(|| DEFAULT_ENDPOINT.to_string());
+    let endpoint = if endpoint.trim() == LEGACY_DEFAULT_ENDPOINT {
+        DEFAULT_ENDPOINT.to_string()
+    } else {
+        endpoint
+    };
     let api_key = store
         .get("apiKey")
         .and_then(|value| value.as_str().map(str::to_string))
+        .or_else(|| std::env::var("DEEPSEEK_API_KEY").ok())
         .or_else(|| std::env::var("DMXAPI_API_KEY").ok())
         .unwrap_or_default();
 
@@ -118,47 +120,19 @@ pub async fn generate_outline(
     payload: GenerateOutlinePayload,
 ) -> Result<OutlineContent, String> {
     let settings = load_settings(&app)?;
-    let (user_prompt, inline_parts) = match payload {
+    let user_prompt = match payload {
         GenerateOutlinePayload::Text { topic, notes } => {
             if topic.trim().is_empty() {
                 return Err("请填写主题".to_string());
             }
-            (
-                dmx::build_text_prompt(topic.trim(), notes.as_deref()),
-                vec![],
-            )
+            dmx::build_text_prompt(topic.trim(), notes.as_deref())
         }
-        GenerateOutlinePayload::File {
-            file_name,
-            mime_type,
-            file_base64,
-            file_text,
-            extra_notes,
-        } => {
-            let mut parts = vec![];
-            if mime_type == "application/pdf" {
-                let base64 = file_base64.filter(|value| !value.is_empty()).ok_or_else(|| {
-                    "PDF 文件内容无效".to_string()
-                })?;
-                parts.push(json!({
-                  "inline_data": {
-                    "mime_type": "application/pdf",
-                    "data": base64
-                  }
-                }));
-            }
-            (
-                dmx::build_file_prompt(
-                    &file_name,
-                    file_text.as_deref(),
-                    extra_notes.as_deref(),
-                ),
-                parts,
-            )
-        }
+        GenerateOutlinePayload::File => {
+            return Err("DeepSeek 官方 API 暂不支持文件上传，请使用文字输入生成提纲".to_string())
+        },
     };
 
-    dmx::generate_outline_from_dmx(&settings, user_prompt, inline_parts)
+    dmx::generate_outline_from_dmx(&settings, user_prompt)
         .await
         .map_err(|error: DmxError| error.to_string())
 }
