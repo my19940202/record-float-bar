@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { listen } from '@tauri-apps/api/event';
 import { FloatingPanel } from '@/components/FloatingPanel';
-import { getOutline } from '@/services/api';
+import { useI18n } from '@/lib/i18n';
+import { getFloatingState, getOutline } from '@/services/api';
 import type { OutlineContent } from '@/types/outline';
 
 export function FloatingOutlineWindow() {
+  const { t } = useI18n();
   const [outline, setOutline] = useState<OutlineContent | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,21 +20,53 @@ export function FloatingOutlineWindow() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = Number(params.get('id'));
-    if (!id) {
-      setError('未指定提纲');
-      return;
-    }
-    void (async () => {
+    let cancelled = false;
+
+    async function loadOutline(id: number | null) {
+      if (!id) {
+        setOutline(null);
+        setError(t.floatingWindow.missingOutline);
+        return;
+      }
+
+      setError(null);
+      setOutline(null);
       try {
         const record = await getOutline(id);
+        if (cancelled) return;
         setOutline(record.content);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '加载失败');
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : t.floatingWindow.loadError);
       }
-    })();
-  }, []);
+    }
+
+    async function loadInitialOutline() {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = Number(params.get('id'));
+      if (urlId) {
+        await loadOutline(urlId);
+        return;
+      }
+
+      const state = await getFloatingState();
+      await loadOutline(state.outlineId);
+    }
+
+    void loadInitialOutline();
+
+    const unlistenPromise = listen<{ id: number }>(
+      'floating-outline-selected',
+      (event) => {
+        void loadOutline(event.payload.id);
+      }
+    );
+
+    return () => {
+      cancelled = true;
+      void unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, [t.floatingWindow.loadError, t.floatingWindow.missingOutline]);
 
   if (error) {
     return (
@@ -47,7 +82,7 @@ export function FloatingOutlineWindow() {
     return (
       <div className="flex min-h-screen items-start justify-end p-4">
         <div className="glass-panel rounded-2xl px-4 py-3 text-sm">
-          加载中...
+          {t.floatingWindow.loading}
         </div>
       </div>
     );

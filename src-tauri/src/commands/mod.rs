@@ -203,6 +203,9 @@ pub async fn show_floating_outline(
         window
             .set_shadow(false)
             .map_err(|error| error.to_string())?;
+        window
+            .emit("floating-outline-selected", json!({ "id": id }))
+            .map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
         return Ok(());
     }

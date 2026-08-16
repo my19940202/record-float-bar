@@ -28,13 +28,9 @@ export default function App() {
     window.location.pathname.endsWith('/floating.html') ||
     window.location.pathname === '/floating';
 
-  if (isFloating) {
-    return <FloatingOutlineWindow />;
-  }
-
   return (
     <I18nProvider>
-      <MainApp />
+      {isFloating ? <FloatingOutlineWindow /> : <MainApp />}
     </I18nProvider>
   );
 }

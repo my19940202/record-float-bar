@@ -109,6 +109,11 @@ export const messages = {
       saving: '保存中...',
       save: '保存设置',
     },
+    floatingWindow: {
+      missingOutline: '未指定提纲',
+      loadError: '加载失败',
+      loading: '加载中...',
+    },
   },
   en: {
     app: {
@@ -210,6 +215,11 @@ export const messages = {
       saveError: 'Failed to save settings',
       saving: 'Saving...',
       save: 'Save settings',
+    },
+    floatingWindow: {
+      missingOutline: 'No outline selected',
+      loadError: 'Failed to load',
+      loading: 'Loading...',
     },
   },
 } as const;
