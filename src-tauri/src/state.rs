@@ -21,9 +21,15 @@ pub struct FloatingRuntimeState {
 pub struct FloatingSettings {
     pub theme: String,
     pub layout: String,
+    #[serde(default = "default_floating_background")]
+    pub background: String,
     pub font_size: u32,
     pub opacity: f32,
     pub blur: u32,
+}
+
+fn default_floating_background() -> String {
+    "cream".to_string()
 }
 
 impl Default for FloatingSettings {
@@ -31,6 +37,7 @@ impl Default for FloatingSettings {
         Self {
             theme: "light".to_string(),
             layout: "vertical".to_string(),
+            background: default_floating_background(),
             font_size: 16,
             opacity: 0.85,
             blur: 24,

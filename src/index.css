@@ -1,17 +1,17 @@
 @import 'tailwindcss';
 
 :root {
-  --background: 220 20% 97%;
-  --foreground: 224 30% 12%;
+  --background: 37 100% 97%;
+  --foreground: 258 24% 16%;
   --card: 0 0% 100%;
-  --card-foreground: 224 30% 12%;
-  --primary: 214 84% 46%;
+  --card-foreground: 258 24% 16%;
+  --primary: 256 100% 65%;
   --primary-foreground: 0 0% 100%;
-  --muted: 220 16% 92%;
-  --muted-foreground: 220 10% 42%;
-  --border: 220 14% 86%;
-  --ring: 214 84% 46%;
-  --radius: 0.75rem;
+  --muted: 270 100% 94%;
+  --muted-foreground: 265 12% 47%;
+  --border: 258 24% 16% / 0.1;
+  --ring: 256 100% 65%;
+  --radius: 1rem;
 }
 
 * {
@@ -27,13 +27,19 @@ body,
 body {
   margin: 0;
   font-family:
-    'SF Pro Text',
+    Inter,
+    'Noto Sans SC',
     'PingFang SC',
+    'SF Pro Text',
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  background: hsl(var(--background));
+  background:
+    radial-gradient(circle at 8% 2%, rgba(244, 255, 63, 0.28), transparent 28rem),
+    radial-gradient(circle at 82% 5%, rgba(234, 220, 255, 0.72), transparent 30rem),
+    radial-gradient(circle at 88% 42%, rgba(158, 216, 255, 0.5), transparent 34rem),
+    hsl(var(--background));
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
 }
@@ -73,8 +79,14 @@ body {
 .floating-stack { display:flex; width:100%; max-width:520px; flex-direction:column; justify-content:flex-end; }
 .floating-stack.floating-horizontal { max-width:none; }
 
-.floating-light { --floating-fg: #0f172a; --floating-muted: #334155; --floating-panel: 255, 255, 255; --floating-border: rgba(255,255,255,.6); }
-.floating-dark { --floating-fg: #f8fafc; --floating-muted: #cbd5e1; --floating-panel: 15, 23, 42; --floating-border: rgba(148,163,184,.35); }
+.floating-light { --floating-fg: #241f33; --floating-muted: #746b86; --floating-panel: 255, 249, 238; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.2); --floating-accent-border: rgba(124,77,255,.42); }
+.floating-dark { --floating-fg: #f8fafc; --floating-muted: #d8d3e8; --floating-panel: 15, 23, 42; --floating-border: rgba(255,255,255,.18); --floating-accent: rgba(158,216,255,.24); --floating-accent-border: rgba(158,216,255,.46); }
+.floating-bg-cream { --floating-fg: #241f33; --floating-muted: #746b86; --floating-panel: 255, 244, 230; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.18); --floating-accent-border: rgba(124,77,255,.42); }
+.floating-bg-white { --floating-fg: #241f33; --floating-muted: #635b73; --floating-panel: 255, 255, 255; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.16); --floating-accent-border: rgba(124,77,255,.4); }
+.floating-bg-lavender { --floating-fg: #241f33; --floating-muted: #66567f; --floating-panel: 234, 220, 255; --floating-border: rgba(89,51,214,.18); --floating-accent: rgba(124,77,255,.2); --floating-accent-border: rgba(89,51,214,.42); }
+.floating-bg-blue { --floating-fg: #172033; --floating-muted: #45566f; --floating-panel: 223, 242, 255; --floating-border: rgba(42,91,130,.16); --floating-accent: rgba(124,77,255,.15); --floating-accent-border: rgba(42,91,130,.35); }
+.floating-bg-pink { --floating-fg: #2d1e2a; --floating-muted: #75596a; --floating-panel: 255, 225, 235; --floating-border: rgba(142,64,94,.16); --floating-accent: rgba(124,77,255,.16); --floating-accent-border: rgba(142,64,94,.35); }
+.floating-bg-slate { --floating-fg: #f8fafc; --floating-muted: #cbd5e1; --floating-panel: 17, 24, 39; --floating-border: rgba(255,255,255,.18); --floating-accent: rgba(158,216,255,.2); --floating-accent-border: rgba(158,216,255,.46); }
 
 .floating-panel {
   position: relative;
@@ -106,7 +118,12 @@ body {
 .floating-settings-open .floating-settings { padding-top:48px; }
 .floating-setting-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .floating-choice { display:inline-flex; align-items:center; gap:4px; border-radius:7px; padding:4px 7px; color:inherit; }
-.floating-choice.active { background: rgba(96,165,250,.3); }
+.floating-choice.active { background: var(--floating-accent); }
+.floating-setting-group { display:grid; gap:7px; }
+.floating-swatch-grid { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:6px; }
+.floating-swatch { display:flex; align-items:center; justify-content:center; height:26px; border:1px solid transparent; border-radius:8px; padding:3px; }
+.floating-swatch span { display:block; width:100%; height:100%; border:1px solid rgba(36,31,51,.12); border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.5); }
+.floating-swatch.active { border-color:var(--floating-accent-border); background:var(--floating-accent); }
 .floating-range { display:grid; grid-template-columns:1fr auto; align-items:center; gap:5px; }
 .floating-range input { grid-column:1 / -1; width:100%; accent-color:#60a5fa; }
 .floating-range output { opacity:.8; }
@@ -119,7 +136,7 @@ body {
 .floating-chapters-horizontal .floating-chapter { flex:1 1 0; min-width:0; }
 .floating-chapter { border:1px solid transparent; border-radius:10px; padding:9px 10px; overflow-wrap:anywhere; text-align:left; color:inherit; transition:background .15s, border-color .15s; }
 .floating-chapter:hover { background: rgba(148,163,184,.18); }
-.floating-chapter.active { background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.45); font-weight:600; }
+.floating-chapter.active { background: var(--floating-accent); border-color: var(--floating-accent-border); font-weight:600; }
 .floating-detail-popover { align-self:center; width:min(700px, 100%); margin-bottom:12px; overflow:hidden; border:1px solid var(--floating-border); border-radius:10px; color:var(--floating-muted); background:rgba(var(--floating-panel), var(--floating-opacity)); backdrop-filter:blur(var(--floating-blur)) saturate(160%); -webkit-backdrop-filter:blur(var(--floating-blur)) saturate(160%); box-shadow:0 10px 30px rgba(15,23,42,.18); }
 .floating-detail-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 10px 7px 12px; border-bottom:1px solid var(--floating-border); }
 .floating-detail-header p { min-width:0; overflow:hidden; color:var(--floating-fg); font-weight:600; text-overflow:ellipsis; white-space:nowrap; }

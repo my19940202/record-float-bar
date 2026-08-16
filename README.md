@@ -1,4 +1,4 @@
-# Outline Helper
+# DemoCue
 
 macOS 悬浮式 AI 讲解提纲助手（Tauri 2 + React 19）。
 

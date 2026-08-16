@@ -49,10 +49,18 @@ export type FloatingViewState = 'collapsed' | 'chapters' | 'detail';
 
 export type FloatingTheme = 'light' | 'dark';
 export type FloatingLayout = 'vertical' | 'horizontal';
+export type FloatingBackground =
+  | 'cream'
+  | 'white'
+  | 'lavender'
+  | 'blue'
+  | 'pink'
+  | 'slate';
 
 export interface FloatingSettings {
   theme: FloatingTheme;
   layout: FloatingLayout;
+  background: FloatingBackground;
   fontSize: number;
   opacity: number;
   blur: number;

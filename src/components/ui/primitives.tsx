@@ -2,22 +2,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-px',
   {
     variants: {
       variant: {
         default:
-          'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90',
+          'bg-[linear-gradient(135deg,_#7c4dff,_#5933d6)] text-[hsl(var(--primary-foreground))] shadow-[0_12px_26px_rgba(89,51,214,0.24)] hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(89,51,214,0.28)]',
         secondary:
-          'bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] hover:opacity-90',
-        ghost: 'hover:bg-[hsl(var(--muted))]',
+          'border border-[hsl(var(--border))] bg-white/70 text-[hsl(var(--foreground))] shadow-sm hover:-translate-y-0.5 hover:bg-white',
+        ghost: 'hover:bg-white/70',
         outline:
-          'border border-[hsl(var(--border))] bg-white hover:bg-[hsl(var(--muted))]',
+          'border border-[hsl(var(--border))] bg-white/65 hover:-translate-y-0.5 hover:bg-white',
       },
       size: {
         default: 'h-10 px-4 py-2',
-        sm: 'h-8 rounded-lg px-3 text-xs',
-        lg: 'h-11 rounded-xl px-6',
+        sm: 'h-8 px-3 text-xs',
+        lg: 'h-11 px-6',
       },
     },
     defaultVariants: {
@@ -47,7 +47,7 @@ export function Input({
   return (
     <input
       className={cn(
-        'flex h-10 w-full rounded-xl border border-[hsl(var(--border))] bg-white px-3 py-2 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+        'flex h-10 w-full rounded-2xl border border-[hsl(var(--border))] bg-white/82 px-3 py-2 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground))]/70 focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
         className
       )}
       {...props}
@@ -62,7 +62,7 @@ export function Textarea({
   return (
     <textarea
       className={cn(
-        'flex min-h-28 w-full rounded-xl border border-[hsl(var(--border))] bg-white px-3 py-2 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+        'flex min-h-28 w-full rounded-2xl border border-[hsl(var(--border))] bg-white/82 px-3 py-2 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground))]/70 focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ export function Card({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm',
+        'rounded-[1.35rem] border border-[hsl(var(--border))] bg-white/82 p-5 shadow-[0_18px_50px_rgba(36,31,51,0.08)] backdrop-blur-xl',
         className
       )}
       {...props}

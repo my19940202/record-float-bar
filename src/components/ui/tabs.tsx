@@ -36,7 +36,7 @@ export function TabsList({
   return (
     <div
       className={cn(
-        'inline-flex rounded-xl bg-[hsl(var(--muted))] p-1',
+        'inline-flex rounded-full border border-[hsl(var(--border))] bg-white/58 p-1 shadow-inner',
         className
       )}
     >
@@ -64,8 +64,8 @@ export function TabsTrigger({
       className={cn(
         'rounded-lg px-4 py-2 text-sm font-medium transition',
         active
-          ? 'bg-white text-[hsl(var(--foreground))] shadow-sm'
-          : 'text-[hsl(var(--muted-foreground))]',
+          ? 'rounded-full bg-white text-[hsl(var(--foreground))] shadow-sm'
+          : 'rounded-full text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
         className
       )}
     >

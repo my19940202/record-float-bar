@@ -16,16 +16,19 @@ export function HomePage() {
 
   return (
     <div className="space-y-6">
-      <section className="flex items-end justify-between gap-4">
+      <section className="flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight">我的提纲</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
+            AI-assisted recording
+          </p>
+          <h2 className="mt-2 text-4xl font-bold leading-tight">我的提纲</h2>
           <p className="mt-2 max-w-xl text-sm text-[hsl(var(--muted-foreground))]">
             生成结构化章节，录制时用悬浮窗快速扫读，减少反复重录。
           </p>
         </div>
         <Link
           to="/create"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 text-sm font-medium text-white"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,_#7c4dff,_#5933d6)] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(89,51,214,0.24)] transition hover:-translate-y-0.5"
         >
           <Plus className="size-4" />
           新建提纲
@@ -58,7 +61,7 @@ export function HomePage() {
             </div>
             <Link
               to="/create"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[hsl(var(--primary))] px-4 text-sm font-medium text-white"
+              className="inline-flex h-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,_#7c4dff,_#5933d6)] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(89,51,214,0.24)]"
             >
               开始创建
             </Link>
@@ -89,7 +92,7 @@ export function HomePage() {
               </Button>
               <Link
                 to={`/edit/${outline.id}`}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-[hsl(var(--border))] bg-white px-4 text-sm font-medium hover:bg-[hsl(var(--muted))]"
+                className="inline-flex h-10 items-center justify-center rounded-full border border-[hsl(var(--border))] bg-white/70 px-4 text-sm font-semibold shadow-sm hover:bg-white"
               >
                 编辑
               </Link>

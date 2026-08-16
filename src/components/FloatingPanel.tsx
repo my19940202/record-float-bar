@@ -11,8 +11,14 @@ import {
   Settings2,
   Sun,
   Moon,
+  Palette,
 } from 'lucide-react';
-import type { OutlineContent, FloatingSettings, FloatingViewState } from '@/types/outline';
+import type {
+  FloatingBackground,
+  FloatingSettings,
+  FloatingViewState,
+  OutlineContent,
+} from '@/types/outline';
 import {
   getFloatingSettings,
   getFloatingState,
@@ -25,8 +31,26 @@ import {
 interface FloatingPanelProps { outline: OutlineContent }
 
 const defaultSettings: FloatingSettings = {
-  theme: 'light', layout: 'vertical', fontSize: 16, opacity: 0.85, blur: 24,
+  theme: 'light',
+  layout: 'vertical',
+  background: 'cream',
+  fontSize: 16,
+  opacity: 0.85,
+  blur: 24,
 };
+
+const backgroundChoices: Array<{
+  value: FloatingBackground;
+  label: string;
+  swatch: string;
+}> = [
+  { value: 'cream', label: '奶油', swatch: '#fff4e6' },
+  { value: 'white', label: '白色', swatch: '#ffffff' },
+  { value: 'lavender', label: '淡紫', swatch: '#eadcff' },
+  { value: 'blue', label: '雾蓝', swatch: '#dff2ff' },
+  { value: 'pink', label: '柔粉', swatch: '#ffe1eb' },
+  { value: 'slate', label: '深灰', swatch: '#111827' },
+];
 
 interface HorizontalResizeState {
   direction: 'west' | 'east';
@@ -305,7 +329,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   }
 
   return (
-    <div className={`floating-shell ${dark ? 'floating-dark' : 'floating-light'}`} style={panelStyle}>
+    <div className={`floating-shell ${dark ? 'floating-dark' : 'floating-light'} floating-bg-${settings.background}`} style={panelStyle}>
       <div
         className="floating-width-resize floating-width-resize-west"
         onPointerDown={(event) => void beginHorizontalResize(event, 'west')}
@@ -413,6 +437,26 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
           {settingsOpen ? <motion.div key="settings" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="floating-settings">
             <div className="floating-setting-row"><span>主题</span><button type="button" className="floating-choice" onClick={() => void updateSettings({ theme: dark ? 'light' : 'dark' })}>{dark ? <Moon className="size-3" /> : <Sun className="size-3" />} {dark ? '深色' : '浅色'}</button></div>
             <div className="floating-setting-row"><span>布局</span><div className="flex gap-1"><button type="button" className={`floating-choice ${settings.layout === 'vertical' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'vertical' })}>竖排</button><button type="button" className={`floating-choice ${settings.layout === 'horizontal' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'horizontal' })}>横排</button></div></div>
+            <div className="floating-setting-group">
+              <div className="floating-setting-row">
+                <span>背景</span>
+                <Palette className="size-3 opacity-70" />
+              </div>
+              <div className="floating-swatch-grid">
+                {backgroundChoices.map((choice) => (
+                  <button
+                    key={choice.value}
+                    type="button"
+                    className={`floating-swatch ${settings.background === choice.value ? 'active' : ''}`}
+                    aria-label={`背景色：${choice.label}`}
+                    title={choice.label}
+                    onClick={() => void updateSettings({ background: choice.value })}
+                  >
+                    <span style={{ background: choice.swatch }} />
+                  </button>
+                ))}
+              </div>
+            </div>
             <label className="floating-range">字号 <output>{settings.fontSize}px</output><input type="range" min="12" max="32" step="1" value={settings.fontSize} onChange={(e) => void updateSettings({ fontSize: Number(e.target.value) })} /></label>
             <label className="floating-range">透明度 <output>{Math.round(settings.opacity * 100)}%</output><input type="range" min="0.35" max="1" step="0.05" value={settings.opacity} onChange={(e) => void updateSettings({ opacity: Number(e.target.value) })} /></label>
             <label className="floating-range">模糊度 <output>{settings.blur}px</output><input type="range" min="0" max="40" step="1" value={settings.blur} onChange={(e) => void updateSettings({ blur: Number(e.target.value) })} /></label>

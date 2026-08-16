@@ -77,6 +77,12 @@ pub async fn save_floating_settings(
     let mut normalized = settings;
     normalized.theme = if normalized.theme == "dark" { "dark" } else { "light" }.to_string();
     normalized.layout = if normalized.layout == "horizontal" { "horizontal" } else { "vertical" }.to_string();
+    if !matches!(
+        normalized.background.as_str(),
+        "cream" | "white" | "lavender" | "blue" | "pink" | "slate"
+    ) {
+        normalized.background = "cream".to_string();
+    }
     normalized.font_size = normalized.font_size.clamp(12, 32);
     normalized.opacity = normalized.opacity.clamp(0.35, 1.0);
     normalized.blur = normalized.blur.min(40);

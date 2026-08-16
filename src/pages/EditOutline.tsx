@@ -117,9 +117,12 @@ export function EditOutlinePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight">编辑提纲</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
+            Refine outline
+          </p>
+          <h2 className="mt-2 text-4xl font-bold leading-tight">编辑提纲</h2>
           <CardDescription className="mt-2">
             调整章节标题和讲解重点，保存后可一键展示悬浮窗。
           </CardDescription>

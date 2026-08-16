@@ -97,8 +97,11 @@ export function CreateOutlinePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h2 className="text-3xl font-semibold tracking-tight">创建提纲</h2>
+      <div className="rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
+          Create guide
+        </p>
+        <h2 className="mt-2 text-4xl font-bold leading-tight">创建提纲</h2>
         <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
           支持纯文字输入，或上传 PDF / Markdown / TXT 让 AI 提炼讲解章节。
         </p>
@@ -135,7 +138,7 @@ export function CreateOutlinePage() {
           <TabsContent value="file" className="space-y-4">
             <label
               htmlFor="file-upload"
-              className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40 px-6 py-10 text-center transition hover:bg-white"
+              className="flex cursor-pointer flex-col items-center justify-center rounded-[1.35rem] border border-dashed border-[#7c4dff]/25 bg-[#fff4e6]/55 px-6 py-10 text-center transition hover:bg-white/78"
             >
               <UploadCloud className="mb-3 size-8 text-[hsl(var(--primary))]" />
               <CardTitle className="text-base">
