@@ -7,6 +7,7 @@ import {
   Input,
   Label,
 } from '@/components/ui/primitives';
+import { interpolate, useI18n } from '@/lib/i18n';
 import type { OutlineChapter } from '@/types/outline';
 
 interface ChapterEditorProps {
@@ -27,6 +28,7 @@ export function ChapterEditor({
   onRemove,
 }: ChapterEditorProps) {
   const dragControls = useDragControls();
+  const { t } = useI18n();
 
   return (
     <Reorder.Item
@@ -42,8 +44,8 @@ export function ChapterEditor({
         <div className="flex items-center gap-2 px-4 py-3">
           <button
             type="button"
-            aria-label={`拖拽调整章节 ${index + 1} 的顺序`}
-            title="拖拽调整顺序"
+            aria-label={interpolate(t.chapter.dragChapter, { index: index + 1 })}
+            title={t.chapter.dragTitle}
             className="cursor-grab touch-none rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] active:cursor-grabbing"
             onPointerDown={(event) => dragControls.start(event)}
           >
@@ -57,7 +59,7 @@ export function ChapterEditor({
             onClick={onToggle}
           >
             <CardTitle className="truncate text-base">
-              {index + 1}. {chapter.title || '未命名章节'}
+              {index + 1}. {chapter.title || t.chapter.untitled}
             </CardTitle>
             {expanded ? (
               <ChevronUp className="size-4 shrink-0" />
@@ -69,7 +71,7 @@ export function ChapterEditor({
           <Button
             variant="ghost"
             size="sm"
-            aria-label={`删除章节 ${index + 1}`}
+            aria-label={interpolate(t.chapter.deleteChapter, { index: index + 1 })}
             onClick={onRemove}
           >
             <Trash2 className="size-4" />
@@ -88,7 +90,7 @@ export function ChapterEditor({
             >
               <div className="space-y-4 border-t border-[hsl(var(--border))] px-5 py-4">
                 <div className="space-y-2">
-                  <Label>章节标题</Label>
+                  <Label>{t.chapter.chapterTitle}</Label>
                   <Input
                     value={chapter.title}
                     onChange={(event) =>
@@ -98,7 +100,7 @@ export function ChapterEditor({
                 </div>
 
                 <div className="space-y-3">
-                  <Label>讲解重点</Label>
+                  <Label>{t.chapter.points}</Label>
                   {chapter.points.map((point, pointIndex) => (
                     <div
                       key={`${chapter.id}-${pointIndex}`}
@@ -106,7 +108,9 @@ export function ChapterEditor({
                     >
                       <Input
                         value={point}
-                        aria-label={`讲解重点 ${pointIndex + 1}`}
+                        aria-label={interpolate(t.chapter.pointLabel, {
+                          index: pointIndex + 1,
+                        })}
                         onChange={(event) => {
                           const points = [...chapter.points];
                           points[pointIndex] = event.target.value;
@@ -117,8 +121,12 @@ export function ChapterEditor({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        aria-label={`删除讲解重点 ${pointIndex + 1}`}
-                        title="删除讲解重点"
+                        aria-label={interpolate(t.chapter.deletePoint, {
+                          index: pointIndex + 1,
+                        })}
+                        title={interpolate(t.chapter.deletePoint, {
+                          index: pointIndex + 1,
+                        })}
                         onClick={() =>
                           onChange({
                             ...chapter,
@@ -138,12 +146,12 @@ export function ChapterEditor({
                     onClick={() =>
                       onChange({
                         ...chapter,
-                        points: [...chapter.points, '新的讲解重点'],
+                        points: [...chapter.points, t.chapter.newPoint],
                       })
                     }
                   >
                     <Plus className="size-4" />
-                    添加重点
+                    {t.chapter.addPoint}
                   </Button>
                 </div>
               </div>

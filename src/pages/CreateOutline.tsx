@@ -11,6 +11,7 @@ import {
   Textarea,
 } from '@/components/ui/primitives';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useI18n } from '@/lib/i18n';
 import {
   ACCEPTED_FILE_TYPES,
   MAX_FILE_BYTES,
@@ -24,6 +25,7 @@ import { useOutlineStore } from '@/stores/outlineStore';
 
 export function CreateOutlinePage() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const setDraft = useOutlineStore((state) => state.setDraft);
   const [tab, setTab] = useState<'text' | 'file'>('text');
   const [topic, setTopic] = useState('');
@@ -43,7 +45,7 @@ export function CreateOutlinePage() {
     try {
       if (tab === 'text') {
         if (!topic.trim()) {
-          throw new Error('请填写主题');
+          throw new Error(t.create.missingTopic);
         }
         const content = await generateOutline({
           mode: 'text',
@@ -61,13 +63,13 @@ export function CreateOutlinePage() {
       }
 
       if (!file) {
-        throw new Error('请上传 PDF / Markdown / TXT 文件');
+        throw new Error(t.create.missingFile);
       }
       if (file.size > MAX_FILE_BYTES) {
-        throw new Error('文件大小不能超过 10MB');
+        throw new Error(t.create.fileTooLarge);
       }
       if (!isAcceptedFile(file)) {
-        throw new Error('仅支持 PDF、Markdown、TXT');
+        throw new Error(t.create.unsupportedFile);
       }
 
       const mimeType = mimeFromFileName(file.name);
@@ -89,7 +91,7 @@ export function CreateOutlinePage() {
       });
     } catch (err) {
       console.error('[generate_outline] failed:', err);
-      setError(err instanceof Error ? err.message : '生成失败');
+      setError(err instanceof Error ? err.message : t.create.generateError);
     } finally {
       setLoading(false);
     }
@@ -99,36 +101,36 @@ export function CreateOutlinePage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
-          Create guide
+          {t.create.eyebrow}
         </p>
-        <h2 className="mt-2 text-4xl font-bold leading-tight">创建提纲</h2>
+        <h2 className="mt-2 text-4xl font-bold leading-tight">{t.create.title}</h2>
         <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-          支持纯文字输入，或上传 PDF / Markdown / TXT 让 AI 提炼讲解章节。
+          {t.create.description}
         </p>
       </div>
 
       <Card>
         <Tabs value={tab} onValueChange={(value) => setTab(value as 'text' | 'file')}>
           <TabsList>
-            <TabsTrigger value="text">文字输入</TabsTrigger>
-            <TabsTrigger value="file">文件上传</TabsTrigger>
+            <TabsTrigger value="text">{t.create.textTab}</TabsTrigger>
+            <TabsTrigger value="file">{t.create.fileTab}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="text" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="topic">主题</Label>
+              <Label htmlFor="topic">{t.create.topic}</Label>
               <Input
                 id="topic"
-                placeholder="例如：我的 Cursor AI 开发流程"
+                placeholder={t.create.topicPlaceholder}
                 value={topic}
                 onChange={(event) => setTopic(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">补充信息</Label>
+              <Label htmlFor="notes">{t.create.notes}</Label>
               <Textarea
                 id="notes"
-                placeholder="面向程序员，预计 10 分钟，重点讲工作流和踩坑"
+                placeholder={t.create.notesPlaceholder}
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
               />
@@ -142,10 +144,10 @@ export function CreateOutlinePage() {
             >
               <UploadCloud className="mb-3 size-8 text-[hsl(var(--primary))]" />
               <CardTitle className="text-base">
-                {file ? file.name : '拖拽或点击上传文件'}
+                {file ? file.name : t.create.uploadTitle}
               </CardTitle>
               <CardDescription className="mt-2">
-                支持 PDF / MD / TXT，最大 10MB
+                {t.create.uploadDescription}
               </CardDescription>
               <input
                 id="file-upload"
@@ -159,10 +161,10 @@ export function CreateOutlinePage() {
               />
             </label>
             <div className="space-y-2">
-              <Label htmlFor="extra-notes">录制补充说明（可选）</Label>
+              <Label htmlFor="extra-notes">{t.create.extraNotes}</Label>
               <Textarea
                 id="extra-notes"
-                placeholder="例如：面向新手，重点讲前 3 章"
+                placeholder={t.create.extraNotesPlaceholder}
                 value={extraNotes}
                 onChange={(event) => setExtraNotes(event.target.value)}
               />
@@ -181,10 +183,10 @@ export function CreateOutlinePage() {
             {loading ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" />
-                生成中...
+                {t.create.generating}
               </>
             ) : (
-              'Generate'
+              t.create.generate
             )}
           </Button>
         </div>

@@ -1,12 +1,12 @@
 [package]
-name = "outline-helper"
+name = "democue"
 version = "0.1.0"
 description = "AI Presentation Companion"
 authors = ["you"]
 edition = "2021"
 
 [lib]
-name = "outline_helper_lib"
+name = "democue_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

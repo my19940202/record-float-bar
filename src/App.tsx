@@ -5,6 +5,7 @@ import { CreateOutlinePage } from '@/pages/CreateOutline';
 import { EditOutlinePage } from '@/pages/EditOutline';
 import { SettingsPage } from '@/pages/Settings';
 import { FloatingOutlineWindow } from '@/windows/FloatingOutline';
+import { I18nProvider } from '@/lib/i18n';
 
 function MainApp() {
   return (
@@ -31,5 +32,9 @@ export default function App() {
     return <FloatingOutlineWindow />;
   }
 
-  return <MainApp />;
+  return (
+    <I18nProvider>
+      <MainApp />
+    </I18nProvider>
+  );
 }

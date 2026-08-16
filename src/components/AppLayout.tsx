@@ -1,15 +1,17 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { MonitorPlay } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', label: '首页' },
-  { to: '/create', label: '创建提纲' },
-  { to: '/settings', label: '设置' },
-];
+  { to: '/', labelKey: 'home' },
+  { to: '/create', labelKey: 'create' },
+  { to: '/settings', labelKey: 'settings' },
+] as const;
 
 export function AppLayout() {
   const location = useLocation();
+  const { t } = useI18n();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_12%_0%,_rgba(244,255,63,0.22),_transparent_30rem),radial-gradient(circle_at_84%_8%,_rgba(234,220,255,0.72),_transparent_30rem),radial-gradient(circle_at_92%_42%,_rgba(158,216,255,0.48),_transparent_34rem),#fff9ee]">
@@ -21,9 +23,9 @@ export function AppLayout() {
             </span>
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--muted-foreground))]">
-                AI guide bar
+                {t.app.tagline}
               </p>
-              <h1 className="truncate text-lg font-bold">ScreenGuide AI</h1>
+              <h1 className="truncate text-lg font-bold">{t.app.brand}</h1>
             </div>
           </Link>
           <nav className="flex shrink-0 items-center gap-1 overflow-x-auto rounded-full bg-[#fff4e6]/70 p-1">
@@ -43,7 +45,7 @@ export function AppLayout() {
                       : 'text-[hsl(var(--muted-foreground))] hover:bg-white/70 hover:text-[hsl(var(--foreground))]'
                   )}
                 >
-                  {item.label}
+                  {t.nav[item.labelKey]}
                 </Link>
               );
             })}

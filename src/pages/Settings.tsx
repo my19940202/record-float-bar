@@ -8,55 +8,17 @@ import {
   Input,
   Label,
 } from '@/components/ui/primitives';
+import { messages, useI18n } from '@/lib/i18n';
 import { getDmxSettings, saveDmxSettings } from '@/services/api';
 
-type SettingsLanguage = 'zh' | 'en';
-
-const copy = {
-  zh: {
-    eyebrow: 'Local configuration',
-    title: '设置',
-    description: '配置 DMXAPI Gemini 中转站。密钥保存在本地，不会进入前端 bundle。',
-    language: 'English',
-    cardTitle: 'DMXAPI',
-    cardDescription: '默认 endpoint 为 Gemini generateContent 接口。',
-    endpoint: 'Endpoint',
-    apiKey: 'API Key',
-    loading: '加载中...',
-    saved: '设置已保存',
-    readError: '读取设置失败',
-    saveError: '保存失败',
-    saving: '保存中...',
-    save: '保存设置',
-  },
-  en: {
-    eyebrow: 'Local configuration',
-    title: 'Settings',
-    description:
-      'Configure the DMXAPI Gemini relay. The key is stored locally and is never bundled into the frontend.',
-    language: '中文',
-    cardTitle: 'DMXAPI',
-    cardDescription: 'The default endpoint uses the Gemini generateContent API.',
-    endpoint: 'Endpoint',
-    apiKey: 'API Key',
-    loading: 'Loading...',
-    saved: 'Settings saved',
-    readError: 'Failed to read settings',
-    saveError: 'Failed to save settings',
-    saving: 'Saving...',
-    save: 'Save settings',
-  },
-} satisfies Record<SettingsLanguage, Record<string, string>>;
-
 export function SettingsPage() {
-  const [language, setLanguage] = useState<SettingsLanguage>('zh');
+  const { setLanguage, t } = useI18n();
   const [endpoint, setEndpoint] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const t = copy[language];
 
   useEffect(() => {
     void (async () => {
@@ -65,7 +27,7 @@ export function SettingsPage() {
         setEndpoint(settings.endpoint);
         setApiKey(settings.apiKey);
       } catch (err) {
-        setError(err instanceof Error ? err.message : copy.zh.readError);
+        setError(err instanceof Error ? err.message : messages.zh.settings.readError);
       } finally {
         setLoading(false);
       }
@@ -81,9 +43,9 @@ export function SettingsPage() {
         endpoint: endpoint.trim(),
         apiKey: apiKey.trim(),
       });
-      setMessage(t.saved);
+      setMessage(t.settings.saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.saveError);
+      setError(err instanceof Error ? err.message : t.settings.saveError);
     } finally {
       setSaving(false);
     }
@@ -94,11 +56,11 @@ export function SettingsPage() {
       <div className="flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
-            {t.eyebrow}
+            {t.settings.eyebrow}
           </p>
-          <h2 className="mt-2 text-4xl font-bold leading-tight">{t.title}</h2>
+          <h2 className="mt-2 text-4xl font-bold leading-tight">{t.settings.title}</h2>
           <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-            {t.description}
+            {t.settings.description}
           </p>
         </div>
         <Button
@@ -107,24 +69,24 @@ export function SettingsPage() {
           onClick={() => setLanguage((value) => (value === 'zh' ? 'en' : 'zh'))}
         >
           <Languages className="size-4" />
-          {t.language}
+          {t.settings.language}
         </Button>
       </div>
 
       <Card className="space-y-4">
         <div>
-          <CardTitle>{t.cardTitle}</CardTitle>
+          <CardTitle>{t.settings.cardTitle}</CardTitle>
           <CardDescription className="mt-1">
-            {t.cardDescription}
+            {t.settings.cardDescription}
           </CardDescription>
         </div>
 
         {loading ? (
-          <CardDescription>{t.loading}</CardDescription>
+          <CardDescription>{t.settings.loading}</CardDescription>
         ) : (
           <>
             <div className="space-y-2">
-              <Label htmlFor="endpoint">{t.endpoint}</Label>
+              <Label htmlFor="endpoint">{t.settings.endpoint}</Label>
               <Input
                 id="endpoint"
                 value={endpoint}
@@ -133,7 +95,7 @@ export function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="api-key">{t.apiKey}</Label>
+              <Label htmlFor="api-key">{t.settings.apiKey}</Label>
               <Input
                 id="api-key"
                 type="password"
@@ -159,7 +121,7 @@ export function SettingsPage() {
         <div className="flex justify-end">
           <Button disabled={loading || saving} onClick={() => void handleSave()}>
             <Save className="size-4" />
-            {saving ? t.saving : t.save}
+            {saving ? t.settings.saving : t.settings.save}
           </Button>
         </div>
       </Card>

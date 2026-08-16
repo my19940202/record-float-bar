@@ -2,13 +2,16 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Sparkles, Trash2, MonitorUp } from 'lucide-react';
 import { Button, Card, CardDescription, CardTitle } from '@/components/ui/primitives';
+import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/utils';
 import { useOutlineStore } from '@/stores/outlineStore';
 import { showFloatingOutline } from '@/services/api';
 
 export function HomePage() {
+  const { language, t } = useI18n();
   const { outlines, loading, error, fetchOutlines, removeOutline } =
     useOutlineStore();
+  const dateLocale = language === 'zh' ? 'zh-CN' : 'en-US';
 
   useEffect(() => {
     void fetchOutlines();
@@ -19,11 +22,11 @@ export function HomePage() {
       <section className="flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
-            AI-assisted recording
+            {t.home.eyebrow}
           </p>
-          <h2 className="mt-2 text-4xl font-bold leading-tight">我的提纲</h2>
+          <h2 className="mt-2 text-4xl font-bold leading-tight">{t.home.title}</h2>
           <p className="mt-2 max-w-xl text-sm text-[hsl(var(--muted-foreground))]">
-            生成结构化章节，录制时用悬浮窗快速扫读，减少反复重录。
+            {t.home.description}
           </p>
         </div>
         <Link
@@ -31,13 +34,13 @@ export function HomePage() {
           className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,_#7c4dff,_#5933d6)] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(89,51,214,0.24)] transition hover:-translate-y-0.5"
         >
           <Plus className="size-4" />
-          新建提纲
+          {t.home.newOutline}
         </Link>
       </section>
 
       {loading ? (
         <Card>
-          <CardDescription>加载中...</CardDescription>
+          <CardDescription>{t.home.loading}</CardDescription>
         </Card>
       ) : null}
 
@@ -54,16 +57,16 @@ export function HomePage() {
               <Sparkles className="size-5" />
             </div>
             <div>
-              <CardTitle>还没有提纲</CardTitle>
+              <CardTitle>{t.home.emptyTitle}</CardTitle>
               <CardDescription className="mt-2">
-                输入主题或上传 PDF / Markdown / TXT，让 AI 生成录制提纲。
+                {t.home.emptyDescription}
               </CardDescription>
             </div>
             <Link
               to="/create"
               className="inline-flex h-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,_#7c4dff,_#5933d6)] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(89,51,214,0.24)]"
             >
-              开始创建
+              {t.home.startCreate}
             </Link>
           </div>
         </Card>
@@ -75,11 +78,11 @@ export function HomePage() {
             <div>
               <CardTitle>{outline.title}</CardTitle>
               <CardDescription className="mt-1">
-                {outline.content.chapters.length} 个章节 ·{' '}
+                {outline.content.chapters.length} {t.home.chapters} ·{' '}
                 {outline.source_type === 'file'
-                  ? `文件：${outline.source_name || '附件'}`
-                  : '文字输入'}{' '}
-                · {formatDate(outline.updated_at)}
+                  ? `${t.home.fileSource}: ${outline.source_name || t.home.attachment}`
+                  : t.home.textSource}{' '}
+                · {formatDate(outline.updated_at, dateLocale)}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -88,13 +91,13 @@ export function HomePage() {
                 onClick={() => void showFloatingOutline(outline.id)}
               >
                 <MonitorUp className="size-4" />
-                展示
+                {t.home.show}
               </Button>
               <Link
                 to={`/edit/${outline.id}`}
                 className="inline-flex h-10 items-center justify-center rounded-full border border-[hsl(var(--border))] bg-white/70 px-4 text-sm font-semibold shadow-sm hover:bg-white"
               >
-                编辑
+                {t.home.edit}
               </Link>
               <Button
                 variant="ghost"

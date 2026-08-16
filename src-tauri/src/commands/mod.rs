@@ -208,7 +208,7 @@ pub async fn show_floating_outline(
     }
 
     WebviewWindowBuilder::new(&app, "floating", url)
-        .title("Outline Floating")
+        .title("DemoCue Floating")
         .inner_size(320.0, 120.0)
         .decorations(false)
         .shadow(false)

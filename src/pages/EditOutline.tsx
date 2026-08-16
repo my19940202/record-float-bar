@@ -9,6 +9,7 @@ import {
   Label,
 } from '@/components/ui/primitives';
 import { OutlineTree } from '@/components/OutlineTree';
+import { useI18n } from '@/lib/i18n';
 import { getOutline, showFloatingOutline } from '@/services/api';
 import { useOutlineStore } from '@/stores/outlineStore';
 import type { OutlineContent } from '@/types/outline';
@@ -22,6 +23,7 @@ type EditLocationState = {
 export function EditOutlinePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const location = useLocation();
   const state = (location.state as EditLocationState | null) ?? {};
   const draft = useOutlineStore((store) => store.draft);
@@ -70,7 +72,7 @@ export function EditOutlinePage() {
         setDraft(outline.content);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : '加载失败');
+          setError(err instanceof Error ? err.message : t.edit.loadError);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -101,7 +103,7 @@ export function EditOutlinePage() {
       setSavedId(saved.id);
       navigate(`/edit/${saved.id}`, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存失败');
+      setError(err instanceof Error ? err.message : t.edit.saveError);
     } finally {
       setSaving(false);
     }
@@ -110,7 +112,7 @@ export function EditOutlinePage() {
   if (loading || !content) {
     return (
       <Card>
-        <CardDescription>{loading ? '加载中...' : '未找到提纲'}</CardDescription>
+        <CardDescription>{loading ? t.edit.loading : t.edit.notFound}</CardDescription>
       </Card>
     );
   }
@@ -120,11 +122,11 @@ export function EditOutlinePage() {
       <div className="flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-white/70 bg-white/45 px-6 py-7 shadow-[0_20px_60px_rgba(36,31,51,0.07)] backdrop-blur-xl sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7c4dff]">
-            Refine outline
+            {t.edit.eyebrow}
           </p>
-          <h2 className="mt-2 text-4xl font-bold leading-tight">编辑提纲</h2>
+          <h2 className="mt-2 text-4xl font-bold leading-tight">{t.edit.title}</h2>
           <CardDescription className="mt-2">
-            调整章节标题和讲解重点，保存后可一键展示悬浮窗。
+            {t.edit.description}
           </CardDescription>
         </div>
         <div className="flex gap-2">
@@ -134,19 +136,19 @@ export function EditOutlinePage() {
               onClick={() => void showFloatingOutline(savedId)}
             >
               <MonitorUp className="size-4" />
-              展示
+              {t.edit.show}
             </Button>
           ) : null}
           <Button disabled={saving} onClick={() => void handleSave()}>
             <Save className="size-4" />
-            {saving ? '保存中...' : '保存'}
+            {saving ? t.edit.saving : t.edit.save}
           </Button>
         </div>
       </div>
 
       <Card className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="outline-title">提纲标题</Label>
+          <Label htmlFor="outline-title">{t.edit.outlineTitle}</Label>
           <Input
             id="outline-title"
             value={title}
@@ -154,7 +156,7 @@ export function EditOutlinePage() {
           />
         </div>
         <CardDescription>
-          来源：{sourceType === 'file' ? sourceName || '文件' : '文字输入'}
+          {t.edit.source}: {sourceType === 'file' ? sourceName || t.edit.file : t.edit.textInput}
         </CardDescription>
       </Card>
 
@@ -169,15 +171,15 @@ export function EditOutlinePage() {
               ...content.chapters,
               {
                 id: createChapterId(),
-                title: '新章节',
-                points: ['补充讲解要点'],
+                title: t.edit.newChapter,
+                points: [t.edit.defaultPoint],
               },
             ],
           })
         }
       >
         <Plus className="size-4" />
-        添加章节
+        {t.edit.addChapter}
       </Button>
 
       {error ? (
