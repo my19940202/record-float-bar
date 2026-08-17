@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="400" viewBox="0 0 1200 400"
+     role="img" aria-labelledby="title desc">
+  <title id="title">DemoCue — macOS 上的 AI 录制提词助手</title>
+  <desc id="desc">DemoCue 标题与重绘的透明悬浮提纲面板：章节列表、当前激活章节，以及展示讲解重点的详情浮层。</desc>
+
+  <defs>
+    <clipPath id="canvasClip">
+      <rect width="1200" height="400" rx="26"/>
+    </clipPath>
+    <radialGradient id="glowYellow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f4ff3f" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#f4ff3f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowPurple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#eadcff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#eadcff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBlue" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dff2ff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#dff2ff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .ui { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, 'PingFang SC', monospace; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <g clip-path="url(#canvasClip)">
+    <rect width="1200" height="400" fill="#fff9ee"/>
+    <circle cx="120" cy="36" r="300" fill="url(#glowYellow)"/>
+    <circle cx="1180" cy="10" r="330" fill="url(#glowPurple)"/>
+    <circle cx="1070" cy="430" r="310" fill="url(#glowBlue)"/>
+  </g>
+
+  <!-- title block -->
+  <g id="title-block" class="ui">
+    <circle cx="66" cy="76" r="5" fill="#7c4dff"/>
+    <text x="82" y="84" font-size="20" font-weight="700" letter-spacing="3"
+          fill="#7c4dff">AI 提纲助手 · macOS 桌面版</text>
+
+    <text x="60" y="180" font-size="96" font-weight="800" letter-spacing="-3"
+          fill="#241f33">DemoCue</text>
+
+    <text x="62" y="236" font-size="27" font-weight="450" fill="#746b86">用 AI 生成讲解提纲 —</text>
+    <text x="62" y="272" font-size="27" font-weight="450" fill="#746b86">录制时让要点始终悬浮在眼前。</text>
+
+    <text x="62" y="320" font-size="18" fill="#746b86" class="mono">macOS · Tauri 2 · React 19 · DeepSeek · 中英双语</text>
+
+    <!-- quiet sparkle + dot accents -->
+    <path d="M702 118 l3.4 9.4 9.4 3.4 -9.4 3.4 -3.4 9.4 -3.4 -9.4 -9.4 -3.4 9.4 -3.4 z"
+          fill="#f4ff3f" stroke="#d9c81f" stroke-width="1.5"/>
+    <circle cx="742" cy="290" r="4" fill="#7c4dff" opacity="0.55"/>
+    <circle cx="758" cy="268" r="2.5" fill="#746b86" opacity="0.35"/>
+  </g>
+
+  <!-- floating window proof -->
+  <g id="floating-proof" clip-path="url(#canvasClip)">
+    <!-- desktop content seen through the glass -->
+    <rect x="778" y="140" width="150" height="96" rx="14" fill="#eadcff" opacity="0.5"
+          transform="rotate(-5 853 188)"/>
+    <rect x="998" y="44" width="140" height="106" rx="14" fill="#dff2ff" opacity="0.55"
+          transform="rotate(6 1068 97)"/>
+    <rect x="842" y="360" width="150" height="70" rx="14" fill="#ffe1eb" opacity="0.45"
+          transform="rotate(-4 917 395)"/>
+
+    <!-- detail popover -->
+    <g id="detail-popover" class="ui">
+      <rect x="814" y="82" width="308" height="124" rx="10" fill="rgba(15,23,42,0.10)"/>
+      <rect x="806" y="72" width="308" height="124" rx="10" fill="#ffffff" opacity="0.95"
+            stroke="rgba(36,31,51,0.10)"/>
+      <circle cx="824" cy="97" r="4.5" fill="#7c4dff"/>
+      <text x="836" y="103" font-size="20" font-weight="600" fill="#241f33">核心功能演示</text>
+      <line x1="806" y1="116" x2="1114" y2="116" stroke="rgba(36,31,51,0.08)"/>
+      <text x="822" y="140" font-size="18" fill="#746b86">• 打开提纲库</text>
+      <text x="822" y="163" font-size="18" fill="#746b86">• 生成并编辑章节</text>
+      <text x="822" y="186" font-size="18" fill="#746b86">• 显示悬浮窗</text>
+    </g>
+
+    <!-- glass chapter panel -->
+    <g id="glass-panel" class="ui">
+      <rect x="798" y="210" width="352" height="174" rx="8" fill="rgba(15,23,42,0.08)"/>
+      <rect x="794" y="202" width="352" height="174" rx="8" fill="rgba(255,255,255,0.78)"
+            stroke="rgba(255,255,255,0.85)"/>
+
+      <!-- titlebar -->
+      <line x1="808" y1="220" x2="820" y2="220" stroke="#746b86" stroke-width="2" stroke-linecap="round"/>
+      <line x1="808" y1="226" x2="820" y2="226" stroke="#746b86" stroke-width="2" stroke-linecap="round"/>
+      <line x1="808" y1="232" x2="816" y2="232" stroke="#746b86" stroke-width="2" stroke-linecap="round"/>
+      <text x="830" y="230" font-size="18" font-weight="600" fill="#241f33">示例录制提纲</text>
+      <circle cx="1098" cy="225" r="3" fill="#746b86" opacity="0.55"/>
+      <circle cx="1116" cy="225" r="3" fill="#746b86" opacity="0.55"/>
+      <circle cx="1134" cy="225" r="3" fill="#746b86" opacity="0.55"/>
+      <line x1="794" y1="240" x2="1146" y2="240" stroke="rgba(36,31,51,0.08)"/>
+
+      <!-- chapter rows -->
+      <g id="row-1">
+        <circle cx="816" cy="263" r="9.5" fill="rgba(36,31,51,0.07)"/>
+        <text x="816" y="268" font-size="13" font-weight="600" text-anchor="middle"
+              fill="#746b86" class="mono">1</text>
+        <text x="836" y="269" font-size="20" fill="#241f33">开场与背景</text>
+      </g>
+      <g id="row-2-active">
+        <rect x="802" y="280" width="336" height="30" rx="9" fill="rgba(124,77,255,0.16)"
+              stroke="rgba(124,77,255,0.42)"/>
+        <circle cx="816" cy="295" r="9.5" fill="#7c4dff"/>
+        <text x="816" y="300" font-size="13" font-weight="600" text-anchor="middle"
+              fill="#ffffff" class="mono">2</text>
+        <text x="836" y="301" font-size="20" font-weight="700" fill="#241f33">核心功能演示</text>
+      </g>
+      <g id="row-3">
+        <circle cx="816" cy="327" r="9.5" fill="rgba(36,31,51,0.07)"/>
+        <text x="816" y="332" font-size="13" font-weight="600" text-anchor="middle"
+              fill="#746b86" class="mono">3</text>
+        <text x="836" y="333" font-size="20" fill="#241f33">录制提示</text>
+      </g>
+      <g id="row-4">
+        <circle cx="816" cy="359" r="9.5" fill="rgba(36,31,51,0.07)"/>
+        <text x="816" y="364" font-size="13" font-weight="600" text-anchor="middle"
+              fill="#746b86" class="mono">4</text>
+        <text x="836" y="365" font-size="20" fill="#241f33">收尾与导出</text>
+      </g>
+    </g>
+
+    <!-- sparkle accents -->
+    <path d="M1152 158 l3.4 9.4 9.4 3.4 -9.4 3.4 -3.4 9.4 -3.4 -9.4 -9.4 -3.4 9.4 -3.4 z"
+          fill="#f4ff3f" stroke="#d9c81f" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="788" cy="318" r="3" fill="#7c4dff" opacity="0.5"/>
+  </g>
+</svg>

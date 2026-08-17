@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="280" viewBox="0 0 1200 280"
+     role="img" aria-labelledby="title desc">
+  <title id="title">DemoCue 的工作流程</title>
+  <desc id="desc">四个步骤：描述录制主题，AI 生成提纲，打开透明悬浮窗，跟随提示录制并切换章节。</desc>
+
+  <defs>
+    <clipPath id="canvasClip">
+      <rect width="1200" height="280" rx="26"/>
+    </clipPath>
+    <radialGradient id="glowPurple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#eadcff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#eadcff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .ui { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, 'PingFang SC', monospace; }
+    </style>
+  </defs>
+
+  <g clip-path="url(#canvasClip)">
+    <rect width="1200" height="280" fill="#fff9ee"/>
+    <circle cx="1150" cy="0" r="240" fill="url(#glowPurple)"/>
+  </g>
+
+  <!-- card 1: describe -->
+  <g id="step-1" class="ui">
+    <rect x="44" y="80" width="252" height="156" rx="16" fill="rgba(15,23,42,0.06)"/>
+    <rect x="40" y="76" width="252" height="156" rx="16" fill="#ffffff" opacity="0.92"
+          stroke="rgba(36,31,51,0.10)"/>
+    <text x="270" y="102" font-size="16" text-anchor="end" fill="#746b86" class="mono">01</text>
+    <rect x="64" y="98" width="40" height="40" rx="11" fill="rgba(124,77,255,0.12)"/>
+    <line x1="76" y1="112" x2="92" y2="112" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="76" y1="120" x2="88" y2="120" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="76" y1="128" x2="84" y2="128" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="64" y="168" font-size="21" font-weight="700" fill="#241f33">描述录制主题</text>
+    <text x="64" y="192" font-size="18" fill="#746b86">输入主题和</text>
+    <text x="64" y="214" font-size="18" fill="#746b86">补充说明。</text>
+  </g>
+
+  <!-- arrow 1 -->
+  <path d="M300 154 h24 l8 -7 v14 z" fill="#7c4dff" opacity="0.55"/>
+
+  <!-- card 2: generate -->
+  <g id="step-2" class="ui">
+    <rect x="338" y="80" width="252" height="156" rx="16" fill="rgba(15,23,42,0.06)"/>
+    <rect x="334" y="76" width="252" height="156" rx="16" fill="#ffffff" opacity="0.92"
+          stroke="rgba(36,31,51,0.10)"/>
+    <text x="564" y="102" font-size="16" text-anchor="end" fill="#746b86" class="mono">02</text>
+    <rect x="358" y="98" width="40" height="40" rx="11" fill="rgba(124,77,255,0.12)"/>
+    <path d="M378 104 l2.7 7.5 7.5 2.7 -7.5 2.7 -2.7 7.5 -2.7 -7.5 -7.5 -2.7 7.5 -2.7 z"
+          fill="#7c4dff"/>
+    <text x="358" y="168" font-size="21" font-weight="700" fill="#241f33">AI 生成提纲</text>
+    <text x="358" y="192" font-size="18" fill="#746b86">生成章节和讲解重点，</text>
+    <text x="358" y="214" font-size="18" fill="#746b86">由 DeepSeek 完成。</text>
+  </g>
+
+  <!-- arrow 2 -->
+  <path d="M594 154 h24 l8 -7 v14 z" fill="#7c4dff" opacity="0.55"/>
+
+  <!-- card 3: float -->
+  <g id="step-3" class="ui">
+    <rect x="632" y="80" width="252" height="156" rx="16" fill="rgba(15,23,42,0.06)"/>
+    <rect x="628" y="76" width="252" height="156" rx="16" fill="#ffffff" opacity="0.92"
+          stroke="rgba(36,31,51,0.10)"/>
+    <text x="858" y="102" font-size="16" text-anchor="end" fill="#746b86" class="mono">03</text>
+    <rect x="652" y="98" width="40" height="40" rx="11" fill="rgba(124,77,255,0.12)"/>
+    <rect x="660" y="104" width="24" height="28" rx="4" fill="#7c4dff"/>
+    <rect x="664" y="110" width="16" height="3" rx="1.5" fill="#ffffff"/>
+    <rect x="664" y="117" width="12" height="3" rx="1.5" fill="#ffffff" opacity="0.7"/>
+    <rect x="664" y="124" width="14" height="3" rx="1.5" fill="#ffffff" opacity="0.7"/>
+    <text x="652" y="168" font-size="21" font-weight="700" fill="#241f33">打开透明悬浮窗</text>
+    <text x="652" y="192" font-size="18" fill="#746b86">透明置顶、毛玻璃质感，</text>
+    <text x="652" y="214" font-size="18" fill="#746b86">不遮挡录制内容。</text>
+  </g>
+
+  <!-- arrow 3 -->
+  <path d="M888 154 h24 l8 -7 v14 z" fill="#7c4dff" opacity="0.55"/>
+
+  <!-- card 4: record -->
+  <g id="step-4" class="ui">
+    <rect x="926" y="80" width="252" height="156" rx="16" fill="rgba(15,23,42,0.06)"/>
+    <rect x="922" y="76" width="252" height="156" rx="16" fill="#ffffff" opacity="0.92"
+          stroke="rgba(36,31,51,0.10)"/>
+    <text x="1152" y="102" font-size="16" text-anchor="end" fill="#746b86" class="mono">04</text>
+    <rect x="946" y="98" width="40" height="40" rx="11" fill="rgba(124,77,255,0.12)"/>
+    <circle cx="966" cy="118" r="9" fill="none" stroke="#7c4dff" stroke-width="2.5"/>
+    <circle cx="966" cy="118" r="4" fill="#7c4dff"/>
+    <text x="946" y="168" font-size="21" font-weight="700" fill="#241f33">跟随提示录制</text>
+    <text x="946" y="192" font-size="18" fill="#746b86">←/→ 或全局快捷键</text>
+    <text x="946" y="214" font-size="18" fill="#746b86">⌘⇧←/→ 切换章节。</text>
+  </g>
+</svg>

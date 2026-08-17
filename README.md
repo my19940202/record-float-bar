@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="DemoCue — macOS 上的 AI 录制提词助手：AI 生成提纲，录制时以透明置顶浮窗展示章节和讲解重点">
+  <img src="./assets/readme/hero.zh.svg" width="100%" alt="DemoCue — macOS 上的 AI 录制提词助手：AI 生成提纲，录制时以透明置顶浮窗展示章节和讲解重点">
 </p>
 
 # DemoCue
@@ -25,7 +25,7 @@ DemoCue 是面向视频创作者的 macOS 桌面助手：用 AI 生成讲解提�
 ### 它是怎么工作的
 
 <p align="center">
-  <img src="./assets/readme/flow.svg" width="100%" alt="四个步骤：描述录制主题 → AI 生成提纲 → 打开透明悬浮窗 → 跟随提示录制">
+  <img src="./assets/readme/flow.zh.svg" width="100%" alt="四个步骤：描述录制主题 → AI 生成提纲 → 打开透明悬浮窗 → 跟随提示录制">
 </p>
 
 1. **描述录制主题**——输入主题和补充说明，比如「录一个 10 分钟的技术分享」
