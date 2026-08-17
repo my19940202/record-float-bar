@@ -80,7 +80,6 @@ body {
 .floating-stack.floating-horizontal { max-width:none; }
 
 .floating-light { --floating-fg: #241f33; --floating-muted: #746b86; --floating-panel: 255, 249, 238; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.2); --floating-accent-border: rgba(124,77,255,.42); }
-.floating-dark { --floating-fg: #f8fafc; --floating-muted: #d8d3e8; --floating-panel: 15, 23, 42; --floating-border: rgba(255,255,255,.18); --floating-accent: rgba(158,216,255,.24); --floating-accent-border: rgba(158,216,255,.46); }
 .floating-bg-cream { --floating-fg: #241f33; --floating-muted: #746b86; --floating-panel: 255, 244, 230; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.18); --floating-accent-border: rgba(124,77,255,.42); }
 .floating-bg-white { --floating-fg: #241f33; --floating-muted: #635b73; --floating-panel: 255, 255, 255; --floating-border: rgba(36,31,51,.12); --floating-accent: rgba(124,77,255,.16); --floating-accent-border: rgba(124,77,255,.4); }
 .floating-bg-lavender { --floating-fg: #241f33; --floating-muted: #66567f; --floating-panel: 234, 220, 255; --floating-border: rgba(89,51,214,.18); --floating-accent: rgba(124,77,255,.2); --floating-accent-border: rgba(89,51,214,.42); }

@@ -9,8 +9,6 @@ import {
   X,
   ListTree,
   Settings2,
-  Sun,
-  Moon,
   Palette,
 } from 'lucide-react';
 import type {
@@ -222,7 +220,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   const safeIndex = Math.min(Math.max(chapterIndex, 0), Math.max(outline.chapters.length - 1, 0));
   const activeChapter = outline.chapters[safeIndex];
   const expanded = viewState !== 'collapsed';
-  const dark = settings.theme === 'dark';
   const panelStyle = {
     '--floating-opacity': settings.opacity,
     '--floating-blur': `${settings.blur}px`,
@@ -337,7 +334,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   }
 
   return (
-    <div className={`floating-shell ${dark ? 'floating-dark' : 'floating-light'} floating-bg-${settings.background}`} style={panelStyle}>
+    <div className={`floating-shell floating-light floating-bg-${settings.background}`} style={panelStyle}>
       <div
         className="floating-width-resize floating-width-resize-west"
         onPointerDown={(event) => void beginHorizontalResize(event, 'west')}
@@ -357,7 +354,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
         className={`floating-stack ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'}`}
       >
         <AnimatePresence initial={false} mode="wait">
-          {viewState === 'detail' && activeChapter && !settingsOpen ? (
+          {viewState === 'detail' && activeChapter && activeChapter.points.length > 0 && !settingsOpen ? (
             <motion.div
               key={activeChapter.id}
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -443,7 +440,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
 
         <AnimatePresence initial={false}>
           {settingsOpen ? <motion.div key="settings" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="floating-settings">
-            <div className="floating-setting-row"><span>{t.floatingPanel.theme}</span><button type="button" className="floating-choice" onClick={() => void updateSettings({ theme: dark ? 'light' : 'dark' })}>{dark ? <Moon className="size-3" /> : <Sun className="size-3" />} {dark ? t.floatingPanel.dark : t.floatingPanel.light}</button></div>
             <div className="floating-setting-row"><span>{t.floatingPanel.layout}</span><div className="flex gap-1"><button type="button" className={`floating-choice ${settings.layout === 'vertical' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'vertical' })}>{t.floatingPanel.vertical}</button><button type="button" className={`floating-choice ${settings.layout === 'horizontal' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'horizontal' })}>{t.floatingPanel.horizontal}</button></div></div>
             <div className="floating-setting-group">
               <div className="floating-setting-row">

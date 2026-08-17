@@ -17,7 +17,8 @@
         "title": "DemoCue",
         "width": 1080,
         "height": 760,
-        "resizable": true
+        "resizable": true,
+        "contentProtected": true
       },
       {
         "label": "floating",
