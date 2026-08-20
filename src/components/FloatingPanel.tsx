@@ -67,25 +67,36 @@ interface HorizontalResizeState {
   height: number;
 }
 
+/** 详情弹层相对章节条的位置：靠屏幕底部时在上方，靠顶部时在下方 */
+type DetailPlacement = 'above' | 'below';
+
 export function FloatingPanel({ outline }: FloatingPanelProps) {
   const { t } = useI18n();
-  const [viewState, setViewStateLocal] = useState<FloatingViewState>('collapsed');
+  // viewState 三态：collapsed=标题条 / chapters=章节列表 / detail=当前章要点
+  const [viewState, setViewStateLocal] = useState<FloatingViewState>('chapters');
   const [chapterIndex, setChapterIndex] = useState(0);
   const [settings, setSettings] = useState(defaultSettings);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(false);
   const [detailMaxHeight, setDetailMaxHeight] = useState(280);
+  const [detailPlacement, setDetailPlacement] = useState<DetailPlacement>('above');
   const chapterIndexRef = useRef(0);
   const resizeState = useRef<HorizontalResizeState | null>(null);
   const stackRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const resizeFrameRef = useRef<number | null>(null);
   const chromeHideTimerRef = useRef<number | null>(null);
+  /** 窗口增高时钉哪条边：above→钉底边向上长，below→钉顶边向下长 */
+  const resizeAnchorRef = useRef<'top' | 'bottom'>('bottom');
+  const detailPlacementRef = useRef<DetailPlacement>('above');
+  const moveUnlistenRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let mounted = true;
     const sync = async () => {
       const [state, storedSettings] = await Promise.all([getFloatingState(), getFloatingSettings()]);
       if (!mounted) return;
+      // Rust 内存态会通过轮询覆盖本地 state（含 show_floating_outline 写入的初始 viewState）
       setViewStateLocal(state.viewState);
       chapterIndexRef.current = state.chapterIndex;
       setChapterIndex(state.chapterIndex);
@@ -131,12 +142,17 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   }, []);
 
   useEffect(() => {
+    resizeAnchorRef.current = detailPlacement === 'below' ? 'top' : 'bottom';
+  }, [detailPlacement]);
+
+  useEffect(() => {
     const stack = stackRef.current;
     if (!stack) return;
 
     let disposed = false;
     let pendingHeight = Math.ceil(stack.getBoundingClientRect().height);
 
+    // ResizeObserver 量 stack 高度，让 Tauri 无边框窗口跟着内容伸缩
     const resizeWindowToContent = async () => {
       resizeFrameRef.current = null;
       const targetHeight = pendingHeight;
@@ -151,13 +167,20 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
       const logicalSize = size.toLogical(scaleFactor);
       if (Math.abs(logicalSize.height - targetHeight) < 2) return;
       const logicalPosition = position.toLogical(scaleFactor);
-      const bottom = logicalPosition.y + logicalSize.height;
-      await Promise.all([
-        appWindow.setSize(new LogicalSize(logicalSize.width, targetHeight)),
-        appWindow.setPosition(
-          new LogicalPosition(logicalPosition.x, bottom - targetHeight)
-        ),
-      ]);
+
+      if (resizeAnchorRef.current === 'bottom') {
+        const bottom = logicalPosition.y + logicalSize.height;
+        await Promise.all([
+          appWindow.setSize(new LogicalSize(logicalSize.width, targetHeight)),
+          appWindow.setPosition(
+            new LogicalPosition(logicalPosition.x, bottom - targetHeight)
+          ),
+        ]);
+        return;
+      }
+
+      // 详情在章节下方：钉住顶边，只增高、不改 y
+      await appWindow.setSize(new LogicalSize(logicalSize.width, targetHeight));
     };
 
     const scheduleResize = (height: number) => {
@@ -183,6 +206,32 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (viewState !== 'detail') return;
+
+    let disposed = false;
+    void getCurrentWindow()
+      .onMoved(async () => {
+        if (disposed) return;
+        const placement = await resolveDetailPlacement();
+        detailPlacementRef.current = placement;
+        setDetailPlacement(placement);
+      })
+      .then((unlisten) => {
+        if (disposed) {
+          unlisten();
+        } else {
+          moveUnlistenRef.current = unlisten;
+        }
+      });
+
+    return () => {
+      disposed = true;
+      moveUnlistenRef.current?.();
+      moveUnlistenRef.current = null;
+    };
+  }, [viewState]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -227,7 +276,40 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     '--floating-detail-max-height': `${detailMaxHeight}px`,
   } as React.CSSProperties;
 
+  /** 根据章节条在工作区的垂直位置，决定详情弹在章节上方还是下方 */
+  async function resolveDetailPlacement(): Promise<DetailPlacement> {
+    const [monitor, position, size, scaleFactor] = await Promise.all([
+      currentMonitor(),
+      getCurrentWindow().outerPosition(),
+      getCurrentWindow().innerSize(),
+      getCurrentWindow().scaleFactor(),
+    ]);
+    if (!monitor) return 'above';
+
+    const logicalPosition = position.toLogical(scaleFactor);
+    const panelRect = panelRef.current?.getBoundingClientRect();
+    const anchorY = panelRect
+      ? logicalPosition.y + panelRect.top + panelRect.height / 2
+      : logicalPosition.y + size.toLogical(scaleFactor).height / 2;
+
+    const workAreaTop = monitor.workArea.position.y / monitor.scaleFactor;
+    const workAreaHeight = monitor.workArea.size.height / monitor.scaleFactor;
+    const workAreaMid = workAreaTop + workAreaHeight / 2;
+
+    // 靠近屏幕底部 → 详情在章节上方；靠近顶部 → 在章节下方
+    return anchorY > workAreaMid ? 'above' : 'below';
+  }
+
+  async function lockDetailPlacement() {
+    const placement = await resolveDetailPlacement();
+    detailPlacementRef.current = placement;
+    setDetailPlacement(placement);
+  }
+
   async function updateViewState(next: FloatingViewState) {
+    if (next === 'detail') {
+      await lockDetailPlacement();
+    }
     setViewStateLocal(next);
     await setFloatingViewState(next);
   }
@@ -246,6 +328,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     );
     chapterIndexRef.current = nextIndex;
     setChapterIndex(nextIndex);
+    await lockDetailPlacement();
     setViewStateLocal('detail');
     await Promise.all([
       setFloatingChapterIndex(nextIndex),
@@ -279,6 +362,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     });
   }
 
+  /** 左右边缘拖宽：west 方向需同步左移窗口 x，保持右缘不动 */
   async function beginHorizontalResize(
     event: React.PointerEvent<HTMLDivElement>,
     direction: HorizontalResizeState['direction']
@@ -333,8 +417,49 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     event.currentTarget.releasePointerCapture(event.pointerId);
   }
 
+  const showDetailPopover =
+    viewState === 'detail'
+    && activeChapter
+    && activeChapter.points.length > 0
+    && !settingsOpen;
+  const detailBelow = detailPlacement === 'below';
+
+  // 详情是章节面板的兄弟节点（非 overlay），DOM 顺序决定其在章节上方或下方
+  const detailPopover = showDetailPopover ? (
+    <motion.div
+      key={activeChapter.id}
+      initial={{ opacity: 0, y: detailBelow ? -10 : 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: detailBelow ? -8 : 8, scale: 0.98 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className={`floating-detail-popover ${detailBelow ? 'floating-detail-popover-below' : ''}`}
+    >
+      <div className="floating-detail-header">
+        <p>{activeChapter.title}</p>
+        <button
+          type="button"
+          aria-label={t.floatingPanel.collapseDetail}
+          title={t.floatingPanel.collapseDetail}
+          className="floating-icon-button"
+          onClick={() => void updateViewState('chapters')}
+        >
+          {detailBelow ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+        </button>
+      </div>
+      <ul className="floating-detail-body floating-points">
+        {activeChapter.points.map((point) => (
+          <li key={point}>• {point}</li>
+        ))}
+      </ul>
+    </motion.div>
+  ) : null;
+
   return (
-    <div className={`floating-shell floating-light floating-bg-${settings.background}`} style={panelStyle}>
+    <div
+      className={`floating-shell floating-light floating-bg-${settings.background} ${detailBelow && showDetailPopover ? 'floating-shell-detail-below' : ''}`}
+      style={panelStyle}
+    >
+      {/* 左右 6px 热区：横向拖宽；往西拖时同步改 x，避免右边跟着动 */}
       <div
         className="floating-width-resize floating-width-resize-west"
         onPointerDown={(event) => void beginHorizontalResize(event, 'west')}
@@ -351,45 +476,22 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
       />
       <div
         ref={stackRef}
-        className={`floating-stack ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'}`}
+        className={`floating-stack ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'} ${detailBelow && showDetailPopover ? 'floating-stack-detail-below' : ''}`}
       >
-        <AnimatePresence initial={false} mode="wait">
-          {viewState === 'detail' && activeChapter && activeChapter.points.length > 0 && !settingsOpen ? (
-            <motion.div
-              key={activeChapter.id}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="floating-detail-popover"
-            >
-              <div className="floating-detail-header">
-                <p>{activeChapter.title}</p>
-                <button
-                  type="button"
-                  aria-label={t.floatingPanel.collapseDetail}
-                  title={t.floatingPanel.collapseDetail}
-                  className="floating-icon-button"
-                  onClick={() => void updateViewState('chapters')}
-                >
-                  <ChevronDown className="size-4" />
-                </button>
-              </div>
-              <ul className="floating-detail-body floating-points">
-                {activeChapter.points.map((point) => (
-                  <li key={point}>• {point}</li>
-                ))}
-              </ul>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {detailPlacement === 'above' ? (
+          <AnimatePresence initial={false} mode="wait">
+            {detailPopover}
+          </AnimatePresence>
+        ) : null}
 
         <motion.div
+          ref={panelRef}
           layout
           className={`glass-panel floating-panel ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'} ${expanded ? 'floating-panel-expanded' : ''} ${expanded && settingsOpen ? 'floating-settings-open' : ''}`}
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
         >
         {expanded ? (
+          /* 展开态工具条默认隐藏，hover 顶部热区才出现，避免遮挡章节 */
           <div
             className={`floating-compact-chrome ${chromeVisible || settingsOpen ? 'visible' : ''}`}
             onMouseEnter={showCompactChrome}
@@ -485,6 +587,12 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
           </motion.div> : null}
         </AnimatePresence>
         </motion.div>
+
+        {detailPlacement === 'below' ? (
+          <AnimatePresence initial={false} mode="wait">
+            {detailPopover}
+          </AnimatePresence>
+        ) : null}
       </div>
     </div>
   );

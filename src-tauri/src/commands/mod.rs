@@ -158,7 +158,7 @@ pub async fn show_floating_outline(
         let mut runtime = state.lock().map_err(|_| "状态锁失败".to_string())?;
         runtime.floating.outline_id = Some(id);
         runtime.floating.chapter_index = 0;
-        runtime.floating.view_state = "collapsed".to_string();
+        runtime.floating.view_state = "chapters".to_string();
     }
 
     let url = if cfg!(debug_assertions) {
