@@ -41,6 +41,10 @@ DemoCue 是面向视频创作者的 macOS 桌面助手：用 AI 生成讲解提�
 - 章节快捷切换：面板内 `←` / `→` 键 + 全局快捷键
 - 中文 / English 界面切换
 
+<img width="1600" height="911" alt="xxx" src="https://github.com/user-attachments/assets/c3269f46-9694-430d-ac4c-657e11958c30" />
+<img width="2160" height="1638" alt="dashboard" src="https://github.com/user-attachments/assets/ba35d368-b6e5-423c-b683-1ea5e1c056be" />
+<img width="2160" height="1638" alt="dashboard" src="https://github.com/user-attachments/assets/b052f311-af81-44df-b0a5-e949a6f2b141" />
+
 ### 开发
 
 ```bash
