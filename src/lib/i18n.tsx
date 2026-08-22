@@ -106,7 +106,7 @@ export const messages = {
     settings: {
       eyebrow: 'Local configuration',
       title: '设置',
-      description: '配置 DeepSeek 官方 API。密钥保存在本地，不会进入前端 bundle。',
+      description: '配置 DeepSeek 官方 API。密钥保存在本地，无需担心泄露。',
       language: 'English',
       cardTitle: 'DeepSeek API',
       cardDescription: '默认 endpoint 为 DeepSeek Chat Completions 接口。',
@@ -118,6 +118,10 @@ export const messages = {
       saveError: '保存失败',
       saving: '保存中...',
       save: '保存设置',
+      floatingCardTitle: '浮窗显示',
+      floatingCardDescription: '调整录制时悬浮窗的布局、背景、字号、透明度和模糊度。',
+      saveFloating: '保存浮窗设置',
+      floatingSaved: '浮窗设置已保存',
     },
     floatingWindow: {
       missingOutline: '未指定提纲',
@@ -255,7 +259,7 @@ export const messages = {
       eyebrow: 'Local configuration',
       title: 'Settings',
       description:
-        'Configure the official DeepSeek API. The key is stored locally and is never bundled into the frontend.',
+        'Configure the official DeepSeek API. The key is stored locally and is never bundled into the frontend. No need to worry about leakage.',
       language: '中文',
       cardTitle: 'DeepSeek API',
       cardDescription: 'The default endpoint uses the DeepSeek Chat Completions API.',
@@ -267,6 +271,11 @@ export const messages = {
       saveError: 'Failed to save settings',
       saving: 'Saving...',
       save: 'Save settings',
+      floatingCardTitle: 'Floating window',
+      floatingCardDescription:
+        'Adjust layout, background, font size, opacity, and blur for the recording floating window.',
+      saveFloating: 'Save floating settings',
+      floatingSaved: 'Floating settings saved',
     },
     floatingWindow: {
       missingOutline: 'No outline selected',

@@ -53,6 +53,10 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Sync version from git tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: node scripts/sync-version-from-tag.mjs ${{ github.ref_name }}
+
       - name: Build Tauri app
         run: pnpm tauri build --bundles ${{ matrix.platform.bundles }}
 

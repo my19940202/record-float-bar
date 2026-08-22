@@ -3,59 +3,19 @@ import { listen } from '@tauri-apps/api/event';
 import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import { LogicalPosition, LogicalSize } from '@tauri-apps/api/dpi';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  ChevronUp,
-  X,
-  ListTree,
-  Settings2,
-  Palette,
-} from 'lucide-react';
-import type {
-  FloatingBackground,
-  FloatingSettings,
-  FloatingViewState,
-  OutlineContent,
-} from '@/types/outline';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import type { FloatingSettings, FloatingViewState, OutlineContent } from '@/types/outline';
 import {
   getFloatingSettings,
   getFloatingState,
   hideFloatingOutline,
-  saveFloatingSettings,
   setFloatingChapterIndex,
   setFloatingViewState,
 } from '@/services/api';
+import { defaultFloatingSettings } from '@/lib/floating-settings';
 import { useI18n } from '@/lib/i18n';
 
 interface FloatingPanelProps { outline: OutlineContent }
-
-const defaultSettings: FloatingSettings = {
-  theme: 'light',
-  layout: 'vertical',
-  background: 'cream',
-  fontSize: 16,
-  opacity: 0.85,
-  blur: 24,
-};
-
-const backgroundChoices: Array<{
-  value: FloatingBackground;
-  labelKey: FloatingBackground;
-  swatch: string;
-}> = [
-  { value: 'cream', labelKey: 'cream', swatch: '#fff4e6' },
-  { value: 'white', labelKey: 'white', swatch: '#ffffff' },
-  { value: 'lavender', labelKey: 'lavender', swatch: '#eadcff' },
-  { value: 'blue', labelKey: 'blue', swatch: '#dff2ff' },
-  { value: 'pink', labelKey: 'pink', swatch: '#ffe1eb' },
-  { value: 'slate', labelKey: 'slate', swatch: '#111827' },
-  { value: 'butter', labelKey: 'butter', swatch: '#fff8ca' },
-  { value: 'lemon', labelKey: 'lemon', swatch: '#f9ff9e' },
-  { value: 'lilac', labelKey: 'lilac', swatch: '#f3e8ff' },
-  { value: 'sky', labelKey: 'sky', swatch: '#dcf4ff' },
-  { value: 'blush', labelKey: 'blush', swatch: '#ffe7df' },
-  { value: 'graphite', labelKey: 'graphite', swatch: '#241f33' },
-];
 
 interface HorizontalResizeState {
   direction: 'west' | 'east';
@@ -70,14 +30,15 @@ interface HorizontalResizeState {
 /** 详情弹层相对章节条的位置：靠屏幕底部时在上方，靠顶部时在下方 */
 type DetailPlacement = 'above' | 'below';
 
+function normalizeViewState(viewState: FloatingViewState): FloatingViewState {
+  return viewState === 'collapsed' ? 'chapters' : viewState;
+}
+
 export function FloatingPanel({ outline }: FloatingPanelProps) {
   const { t } = useI18n();
-  // viewState 三态：collapsed=标题条 / chapters=章节列表 / detail=当前章要点
   const [viewState, setViewStateLocal] = useState<FloatingViewState>('chapters');
   const [chapterIndex, setChapterIndex] = useState(0);
-  const [settings, setSettings] = useState(defaultSettings);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [chromeVisible, setChromeVisible] = useState(false);
+  const [settings, setSettings] = useState<FloatingSettings>(defaultFloatingSettings);
   const [detailMaxHeight, setDetailMaxHeight] = useState(280);
   const [detailPlacement, setDetailPlacement] = useState<DetailPlacement>('above');
   const chapterIndexRef = useRef(0);
@@ -85,7 +46,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   const stackRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const resizeFrameRef = useRef<number | null>(null);
-  const chromeHideTimerRef = useRef<number | null>(null);
   /** 窗口增高时钉哪条边：above→钉底边向上长，below→钉顶边向下长 */
   const resizeAnchorRef = useRef<'top' | 'bottom'>('bottom');
   const detailPlacementRef = useRef<DetailPlacement>('above');
@@ -96,8 +56,8 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     const sync = async () => {
       const [state, storedSettings] = await Promise.all([getFloatingState(), getFloatingSettings()]);
       if (!mounted) return;
-      // Rust 内存态会通过轮询覆盖本地 state（含 show_floating_outline 写入的初始 viewState）
-      setViewStateLocal(state.viewState);
+      const nextViewState = normalizeViewState(state.viewState);
+      setViewStateLocal(nextViewState);
       chapterIndexRef.current = state.chapterIndex;
       setChapterIndex(state.chapterIndex);
       setSettings(storedSettings);
@@ -152,7 +112,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     let disposed = false;
     let pendingHeight = Math.ceil(stack.getBoundingClientRect().height);
 
-    // ResizeObserver 量 stack 高度，让 Tauri 无边框窗口跟着内容伸缩
     const resizeWindowToContent = async () => {
       resizeFrameRef.current = null;
       const targetHeight = pendingHeight;
@@ -179,7 +138,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
         return;
       }
 
-      // 详情在章节下方：钉住顶边，只增高、不改 y
       await appWindow.setSize(new LogicalSize(logicalSize.width, targetHeight));
     };
 
@@ -235,17 +193,12 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (settingsOpen) {
-          setSettingsOpen(false);
-        } else if (viewState === 'detail') {
-          void updateViewState('chapters');
-        }
+      if (event.key === 'Escape' && viewState === 'detail') {
+        void updateViewState('chapters');
         return;
       }
 
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-      if (settingsOpen) return;
       const target = event.target;
       if (
         target instanceof HTMLElement &&
@@ -256,19 +209,10 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [settingsOpen, viewState]);
-
-  useEffect(() => {
-    return () => {
-      if (chromeHideTimerRef.current !== null) {
-        window.clearTimeout(chromeHideTimerRef.current);
-      }
-    };
-  }, []);
+  }, [viewState]);
 
   const safeIndex = Math.min(Math.max(chapterIndex, 0), Math.max(outline.chapters.length - 1, 0));
   const activeChapter = outline.chapters[safeIndex];
-  const expanded = viewState !== 'collapsed';
   const panelStyle = {
     '--floating-opacity': settings.opacity,
     '--floating-blur': `${settings.blur}px`,
@@ -276,7 +220,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     '--floating-detail-max-height': `${detailMaxHeight}px`,
   } as React.CSSProperties;
 
-  /** 根据章节条在工作区的垂直位置，决定详情弹在章节上方还是下方 */
   async function resolveDetailPlacement(): Promise<DetailPlacement> {
     const [monitor, position, size, scaleFactor] = await Promise.all([
       currentMonitor(),
@@ -296,7 +239,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     const workAreaHeight = monitor.workArea.size.height / monitor.scaleFactor;
     const workAreaMid = workAreaTop + workAreaHeight / 2;
 
-    // 靠近屏幕底部 → 详情在章节上方；靠近顶部 → 在章节下方
     return anchorY > workAreaMid ? 'above' : 'below';
   }
 
@@ -307,17 +249,12 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   }
 
   async function updateViewState(next: FloatingViewState) {
-    if (next === 'detail') {
+    const normalized = normalizeViewState(next);
+    if (normalized === 'detail') {
       await lockDetailPlacement();
     }
-    setViewStateLocal(next);
-    await setFloatingViewState(next);
-  }
-
-  async function updateSettings(patch: Partial<FloatingSettings>) {
-    const next = { ...settings, ...patch };
-    setSettings(next);
-    await saveFloatingSettings(next);
+    setViewStateLocal(normalized);
+    await setFloatingViewState(normalized);
   }
 
   async function navigateChapter(direction: -1 | 1) {
@@ -336,33 +273,20 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
     ]);
   }
 
-  function showCompactChrome() {
-    if (chromeHideTimerRef.current !== null) {
-      window.clearTimeout(chromeHideTimerRef.current);
-      chromeHideTimerRef.current = null;
-    }
-    setChromeVisible(true);
-  }
-
-  function scheduleCompactChromeHide() {
-    if (settingsOpen) return;
-    if (chromeHideTimerRef.current !== null) {
-      window.clearTimeout(chromeHideTimerRef.current);
-    }
-    chromeHideTimerRef.current = window.setTimeout(() => {
-      setChromeVisible(false);
-      chromeHideTimerRef.current = null;
-    }, 400);
-  }
-
   function startWindowDragging(event: React.MouseEvent<HTMLElement>) {
     if (event.button !== 0) return;
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      target.closest('button, a, input, textarea, select, [contenteditable="true"]')
+    ) {
+      return;
+    }
     void getCurrentWindow().startDragging().catch((error) => {
       console.error(t.floatingPanel.dragFailed, error);
     });
   }
 
-  /** 左右边缘拖宽：west 方向需同步左移窗口 x，保持右缘不动 */
   async function beginHorizontalResize(
     event: React.PointerEvent<HTMLDivElement>,
     direction: HorizontalResizeState['direction']
@@ -420,11 +344,9 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
   const showDetailPopover =
     viewState === 'detail'
     && activeChapter
-    && activeChapter.points.length > 0
-    && !settingsOpen;
+    && activeChapter.points.length > 0;
   const detailBelow = detailPlacement === 'below';
 
-  // 详情是章节面板的兄弟节点（非 overlay），DOM 顺序决定其在章节上方或下方
   const detailPopover = showDetailPopover ? (
     <motion.div
       key={activeChapter.id}
@@ -433,6 +355,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
       exit={{ opacity: 0, y: detailBelow ? -8 : 8, scale: 0.98 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
       className={`floating-detail-popover ${detailBelow ? 'floating-detail-popover-below' : ''}`}
+      onMouseDown={startWindowDragging}
     >
       <div className="floating-detail-header">
         <p>{activeChapter.title}</p>
@@ -441,6 +364,7 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
           aria-label={t.floatingPanel.collapseDetail}
           title={t.floatingPanel.collapseDetail}
           className="floating-icon-button"
+          onMouseDown={(event) => event.stopPropagation()}
           onClick={() => void updateViewState('chapters')}
         >
           {detailBelow ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -459,7 +383,6 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
       className={`floating-shell floating-light floating-bg-${settings.background} ${detailBelow && showDetailPopover ? 'floating-shell-detail-below' : ''}`}
       style={panelStyle}
     >
-      {/* 左右 6px 热区：横向拖宽；往西拖时同步改 x，避免右边跟着动 */}
       <div
         className="floating-width-resize floating-width-resize-west"
         onPointerDown={(event) => void beginHorizontalResize(event, 'west')}
@@ -487,105 +410,46 @@ export function FloatingPanel({ outline }: FloatingPanelProps) {
         <motion.div
           ref={panelRef}
           layout
-          className={`glass-panel floating-panel ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'} ${expanded ? 'floating-panel-expanded' : ''} ${expanded && settingsOpen ? 'floating-settings-open' : ''}`}
+          className={`glass-panel floating-panel floating-panel-expanded ${settings.layout === 'horizontal' ? 'floating-horizontal' : 'floating-vertical'}`}
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          onMouseDown={startWindowDragging}
         >
-        {expanded ? (
-          /* 展开态工具条默认隐藏，hover 顶部热区才出现，避免遮挡章节 */
-          <div
-            className={`floating-compact-chrome ${chromeVisible || settingsOpen ? 'visible' : ''}`}
-            onMouseEnter={showCompactChrome}
-            onMouseLeave={scheduleCompactChromeHide}
-            onMouseDown={startWindowDragging}
-          >
-            <div className="floating-compact-toolbar">
-              <div className="floating-compact-drag" aria-label={t.floatingPanel.dragWindow}>
-                <ListTree className="size-4" />
-              </div>
-              <div className="flex items-center gap-1">
-                <button type="button" aria-label={t.floatingPanel.settings} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
-                  setSettingsOpen((value) => !value);
-                  showCompactChrome();
-                }}>
-                  <Settings2 className="size-4" />
-                </button>
-                <button type="button" aria-label={t.floatingPanel.collapseOutline} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => {
-                  setSettingsOpen(false);
-                  void updateViewState('collapsed');
-                }}>
-                  <ChevronUp className="size-4" />
-                </button>
-                <button type="button" aria-label={t.floatingPanel.close} title={t.floatingPanel.close} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
-                  <X className="size-4" />
-                </button>
-              </div>
-            </div>
+          <div className="floating-close-chrome">
+            <button
+              type="button"
+              aria-label={t.floatingPanel.close}
+              title={t.floatingPanel.close}
+              className="floating-icon-button"
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={() => void hideFloatingOutline()}
+            >
+              <X className="size-4" />
+            </button>
           </div>
-        ) : (
-          <div className="floating-titlebar" onMouseDown={startWindowDragging}>
-            <div className="floating-drag-handle">
-              <ListTree className="size-4" /> <span>{outline.title}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button type="button" aria-label={t.floatingPanel.settings} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => setSettingsOpen((value) => !value)}>
-                <Settings2 className="size-4" />
-              </button>
-              <button type="button" aria-label={t.floatingPanel.expandOutline} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void updateViewState('chapters')}>
-                <ChevronDown className="size-4" />
-              </button>
-              <button type="button" aria-label={t.floatingPanel.close} title={t.floatingPanel.close} className="floating-icon-button" onMouseDown={(e) => e.stopPropagation()} onClick={() => void hideFloatingOutline()}>
-                <X className="size-4" />
-              </button>
-            </div>
-          </div>
-        )}
 
-        <AnimatePresence initial={false}>
-          {settingsOpen ? <motion.div key="settings" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="floating-settings">
-            <div className="floating-setting-row"><span>{t.floatingPanel.layout}</span><div className="flex gap-1"><button type="button" className={`floating-choice ${settings.layout === 'vertical' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'vertical' })}>{t.floatingPanel.vertical}</button><button type="button" className={`floating-choice ${settings.layout === 'horizontal' ? 'active' : ''}`} onClick={() => void updateSettings({ layout: 'horizontal' })}>{t.floatingPanel.horizontal}</button></div></div>
-            <div className="floating-setting-group">
-              <div className="floating-setting-row">
-                <span>{t.floatingPanel.background}</span>
-                <Palette className="size-3 opacity-70" />
-              </div>
-              <div className="floating-swatch-grid">
-                {backgroundChoices.map((choice) => {
-                  const label = t.floatingPanel.backgrounds[choice.labelKey];
-                  return (
-                    <button
-                      key={choice.value}
-                      type="button"
-                      className={`floating-swatch ${settings.background === choice.value ? 'active' : ''}`}
-                      aria-label={`${t.floatingPanel.backgroundColor}: ${label}`}
-                      title={label}
-                      onClick={() => void updateSettings({ background: choice.value })}
-                    >
-                      <span style={{ background: choice.swatch }} />
-                    </button>
-                  );
-                })}
-              </div>
+          <motion.div className="floating-section">
+            <div className={`floating-chapters floating-chapters-${settings.layout}`}>
+              {outline.chapters.map((chapter, index) => (
+                <button
+                  key={chapter.id}
+                  type="button"
+                  className={`floating-chapter ${index === chapterIndex ? 'active' : ''}`}
+                  onClick={() => {
+                    if (viewState === 'detail' && index === safeIndex) {
+                      void updateViewState('chapters');
+                      return;
+                    }
+                    chapterIndexRef.current = index;
+                    setChapterIndex(index);
+                    void setFloatingChapterIndex(index);
+                    void updateViewState('detail');
+                  }}
+                >
+                  {index + 1}. {chapter.title}
+                </button>
+              ))}
             </div>
-            <label className="floating-range">{t.floatingPanel.fontSize} <output>{settings.fontSize}px</output><input type="range" min="12" max="32" step="1" value={settings.fontSize} onChange={(e) => void updateSettings({ fontSize: Number(e.target.value) })} /></label>
-            <label className="floating-range">{t.floatingPanel.opacity} <output>{Math.round(settings.opacity * 100)}%</output><input type="range" min="0.35" max="1" step="0.05" value={settings.opacity} onChange={(e) => void updateSettings({ opacity: Number(e.target.value) })} /></label>
-            <label className="floating-range">{t.floatingPanel.blur} <output>{settings.blur}px</output><input type="range" min="0" max="40" step="1" value={settings.blur} onChange={(e) => void updateSettings({ blur: Number(e.target.value) })} /></label>
-          </motion.div> : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false}>
-          {viewState !== 'collapsed' ? <motion.div key="chapters" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="floating-section">
-            <div className={`floating-chapters floating-chapters-${settings.layout}`}>{outline.chapters.map((chapter, index) => <button key={chapter.id} type="button" className={`floating-chapter ${index === chapterIndex ? 'active' : ''}`} onClick={() => {
-              if (viewState === 'detail' && index === safeIndex) {
-                void updateViewState('chapters');
-                return;
-              }
-              chapterIndexRef.current = index;
-              setChapterIndex(index);
-              void setFloatingChapterIndex(index);
-              void updateViewState('detail');
-            }}>{index + 1}. {chapter.title}</button>)}</div>
-          </motion.div> : null}
-        </AnimatePresence>
+          </motion.div>
         </motion.div>
 
         {detailPlacement === 'below' ? (
